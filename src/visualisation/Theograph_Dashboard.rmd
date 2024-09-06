@@ -1,0 +1,66 @@
+---
+title: "Primary Care Timeline Tool"
+author: "NHS Transformation Unit"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    toc_collapsed: true
+    css: ../config/nhs_tu_theme.css
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+source("../config/r_scripts/packages.R")
+source("../visualisation/r_scripts/DUMMY_Visualisation.R")
+
+```
+
+```{r logo, echo = FALSE}
+
+htmltools::img(src = knitr::image_uri(paste0(here(), "/images/DIA_logo_large.png")), 
+               alt = 'logo', 
+               style = 'position:absolute; top:0; right:5%; padding:10px;',
+               width = "180px",
+               heigth = "180px")
+
+```
+
+## Introduction and guidance
+***
+
+Introductory text to be agreed with client, but will speak to purpose of tool, including its aims and limitations, as well as some guidance on how the tool is designed to be used.
+
+
+## Patient selection
+***
+
+This section will contain a search bar which will allow the user to search for a patient using either ID # or surname.
+
+
+## GP Contact, Diagnosis and Prescription Timeline
+***
+
+The time series below visualises patient X's GP contact history, displaying the following information:
+
+* Date of contact
+* Any diagnoses made on date of contact
+* Any prescriptions (or changes to existing prescriptions) made on date of contact
+* The results of any relevant biomedical assays completed on date of contact
+
+```{r dummy_timeline, echo=FALSE, fig.align='center'}
+combined_plot
+```
+
+## Contact Summary
+***
+
+The table below summarises patient X's entire GP contact history between the dates of DYNAMIC START and DYNAMIC END. Filters are provided to the top-right of the table to enable users to define their search criteria.
+
+```{r dummy_table, echo=FALSE, fig.align='center'}
+styled_table
+```
+
