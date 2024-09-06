@@ -1,13 +1,15 @@
 
-# Script for loading appropriate packages for the running of MHSDS processing scripts
+# Script for loading appropriate packages for CIPHA data extraction, processing and visualisation.
 
 packages <- c("here",
-             "purrr",
-             "tidyverse",
-             "tidyr",
-             "stringr",
-             "openxlsx",
-             "readxl",
-             "dplyr")
+              "tidyverse",
+              "odbc",
+              "DBI",
+              "purrr",
+              "tidyr",
+              "stringr",
+              "openxlsx",
+              "readxl",
+              "dplyr")
 
 lapply(packages, library, character.only=TRUE)
