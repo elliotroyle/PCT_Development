@@ -10,6 +10,13 @@ packages <- c("here",
               "stringr",
               "openxlsx",
               "readxl",
-              "dplyr")
+              "dplyr",
+              "ggplot2",
+              "plotly", 
+              "kableExtra",
+              "DT", 
+              "readxl")
 
 lapply(packages, library, character.only=TRUE)
+
+install.packages("readxl")
