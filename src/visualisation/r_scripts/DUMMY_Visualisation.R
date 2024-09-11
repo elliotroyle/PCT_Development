@@ -93,4 +93,3 @@ styled_table <- data %>%
 
 # Save the styled table object
 saveRDS(styled_table, file = "styled_table.rds")
-
