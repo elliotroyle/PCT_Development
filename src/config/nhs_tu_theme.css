@@ -6,7 +6,9 @@ body {
     color: #333; /* Dark text color */
     font-family: Franklin Gothic;
     font-size: 11pt;
-    font-weight: 300
+    font-weight: 300;
+    max-width: 1800px;  /* Adjust this value as needed for content width */
+    margin: auto;  /* Center the content */
 }
 
 h1 {
