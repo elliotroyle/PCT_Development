@@ -18,12 +18,11 @@ time_series_data <- data.frame(Date = date_seq, HBA1c_Value = HBA1c_value, Insul
 # Define a vector of colors for the label points
 colors <- c("#cb7dfb", "#ffc648", "#ff4877")
 
-# Randomly assign colors to each point in the labels column
-set.seed(456)  # For reproducibility
-time_series_data$Color <- sample(colors, nrow(time_series_data), replace = TRUE)
-
-# Define custom labels for the legend
-legend_labels <- c("Type A", "Type B", "Type C")  # Adjust as needed
+# Create a factor variable for color assignment with appropriate labels
+time_series_data$Type <- factor(
+  sample(c("Diagnosis", "Prescription", "Review"), nrow(time_series_data), replace = TRUE),
+  levels = c("Diagnosis", "Prescription", "Review")
+)
 
 # Create the first ggplot for HBA1c numerical points with fixed color
 p1 <- ggplot(time_series_data, aes(x = Date, y = HBA1c_Value)) +
@@ -46,10 +45,10 @@ p2 <- ggplot(time_series_data, aes(x = Date, y = Insulin_Value)) +
   theme_minimal()
 
 # Create the third ggplot for labels with random colors and custom legend
-p3 <- ggplot(time_series_data, aes(x = Date, y = factor(Labels, levels = c("Contact Type")), color = Color)) +
+p3 <- ggplot(time_series_data, aes(x = Date, y = factor(Labels, levels = c("Contact Type")), color = Type)) +
   geom_point(size = 2) +  # Plot label points with random colors
-  scale_color_manual(values = colors, labels = legend_labels, name = "Contact Type") +  # Custom color legend
-  labs(title = "Label Series",
+  scale_color_manual(values = colors, name = "Contact Type") +  # Custom color legend
+  labs(title = " ",
        x = "Date",
        y = " ") +
   scale_x_date(date_labels = "%d/%m/%Y") +  # Format X-axis dates
@@ -81,15 +80,14 @@ combined_plot <- subplot(
 # Display the combined interactive plot
 combined_plot
 
-data <- read_excel("C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_Cipha_Data.xlsx")
 
-styled_table <- data %>%
-  kable(format = "html", escape = FALSE, align = 'c') %>%
-  kable_styling(
-    bootstrap_options = c("striped", "hover", "condensed", "responsive"),
-    font_size = 14
-  ) %>%
-  column_spec(1:ncol(data), background = "white", color = "blue")
+# Dummy patient table
 
-# Save the styled table object
-saveRDS(styled_table, file = "styled_table.rds")
+table_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_Cipha_Data.xlsx"
+
+dummy_table_df <- read_excel(table_path, sheet = 1)
+
+dummy_cipha_vis <- dummy_table_df %>%
+  kable(format = "html", align = "lrrrrr") %>%  # Adjust align if needed
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  row_spec(0, background = "#407EC9", color = "white")  # Style the header row
