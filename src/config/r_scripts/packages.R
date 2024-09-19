@@ -18,5 +18,3 @@ packages <- c("here",
               "readxl")
 
 lapply(packages, library, character.only=TRUE)
-
-install.packages("readxl")
