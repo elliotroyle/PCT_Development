@@ -9,6 +9,7 @@ output:
     toc_float: true
     toc_collapsed: true
     css: ../config/nhs_tu_theme.css
+runtime: shiny
 ---
 
 ```{css, echo=FALSE}
@@ -91,13 +92,9 @@ combined_plot
 ## Contact Summary
 ***
 
-The table below summarises patient X's entire GP contact history between the dates of DYNAMIC START and DYNAMIC END. Filters are provided to the top-right of the table to enable users to define their search criteria.
+Please use the button below to download the patients entire GP event history as a CSV file.
 
-<strong style="color: blue;">[DROPDOWN MENUS ALLOWING FOR SELECTION OF 'CONTACT TYPE', 'CONDITION', 'THERAPY']</strong>
 
-<strong style="color: blue;">[TABLE BELOW WILL ALSO ALLOW USER TO SORT BY LARGEST/SMALLEST FOR DATE/NUMERIC FIELDS]</strong>
-
-```{r dummy_table, echo=FALSE, fig.align='center'}
-dummy_cipha_vis
+```{r downloadButtonUI}
+downloadButton("downloadData", "Download Patient Data as CSV")
 ```
-

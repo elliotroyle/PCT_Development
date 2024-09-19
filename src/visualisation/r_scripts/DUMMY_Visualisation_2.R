@@ -1,3 +1,4 @@
+
 # Script for creating the timeseries and table visualisations to population the theograph tool, including the dynamic filtering functionality
 
 # Standalone packages necessary for testing
@@ -14,7 +15,7 @@ dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
 
 # TEMP filter the data for specific patients
 TS_df <- dummy_TS_df %>%
-  filter(Patient == 'Jane Doe') #'Jane Doe', 'Joe Bloggs'
+  filter(Patient == 'Joe Bloggs') #'Jane Doe', 'Joe Bloggs'
 
 # Function to check if data is entirely blank
 is_data_blank <- function(data, y_col, test_col, unit_col) {
@@ -157,7 +158,12 @@ combined_plot <- subplot(
   )
 
 # Creating a table to view all data related to a single patient
-dummy_cipha_vis <- TS_df %>%
-  kable(format = "html", align = "lrrrrr") %>%  # Adjust align if needed
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-  row_spec(0, background = "#407EC9", color = "white")  # Style the header row
+
+output$downloadData <- downloadHandler(
+  filename = function() {
+    paste("patient_data_", Sys.Date(), ".csv", sep = "")
+  },
+  content = function(file) {
+    write.csv(TS_df, file, row.names = FALSE)
+  }
+)
