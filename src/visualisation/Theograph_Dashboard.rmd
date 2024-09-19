@@ -11,11 +11,21 @@ output:
     css: ../config/nhs_tu_theme.css
 ---
 
+```{css, echo=FALSE}
+    body .main-container {
+      max-width: 1800px !important;
+      width: 1800px !important;
+    }
+    body {
+      max-width: 1800px !important;
+    }
+```
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
 source("../config/r_scripts/packages.R")
-source("../visualisation/r_scripts/DUMMY_Visualisation.R")
+source("../visualisation/r_scripts/DUMMY_Visualisation_2.R")
 
 ```
 
@@ -29,7 +39,23 @@ htmltools::img(src = knitr::image_uri(paste0(here(), "/images/DIA_logo_large.png
 
 ```
 
-## Introduction and guidance
+<style>
+  .container-fluid {
+    display: flex;
+  }
+  .sidebar {
+    width: 25%; /* Adjust the width as needed */
+    padding-right: 50px;
+  }
+  .main {
+    width: 75%; /* Adjust the width as needed */
+  }
+</style>
+
+<div class="container-fluid">
+  <div class="sidebar">
+
+## User guidance
 ***
 
 Introductory text to be agreed with client, but will speak to purpose of tool, including its aims and limitations, as well as some guidance on how the tool is designed to be used.
@@ -42,6 +68,9 @@ This section will contain a search bar which will allow the user to search for a
 
 <strong style="color: blue;">[SEARCH BAR OBJECT ALLOWING USER TO SEARCH FOR PATIENT VIA ID# OR SURNAME]</strong>
 
+</div>
+
+  <div class="main">
 
 ## GP Contact, Diagnosis and Prescription Timeline
 ***
@@ -55,7 +84,7 @@ The time series below visualises patient X's GP contact history, displaying the 
 
 <strong style="color: blue;">[DROPDOWN MENU ALLOWING USER TO FILTER CONDITION/MEDICATION TIMESERIES TO VISUALISE]</strong>
 
-```{r dummy_timeline, echo=FALSE, fig.align='center'}
+```{r dummy_timeline, echo=FALSE, fig.width=10, fig.height=10, out.width="100%", fig.align='center'}
 combined_plot
 ```
 
