@@ -24,6 +24,8 @@ time_series_data$Type <- factor(
   levels = c("Diagnosis", "Prescription", "Review")
 )
 
+write.xlsx(time_series_data, file = "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx", sheetName = "Sheet1", rowNames = FALSE)
+
 # Create the first ggplot for HBA1c numerical points with fixed color
 p1 <- ggplot(time_series_data, aes(x = Date, y = HBA1c_Value)) +
   geom_line(color = "lightblue") +
@@ -44,10 +46,12 @@ p2 <- ggplot(time_series_data, aes(x = Date, y = Insulin_Value)) +
   scale_x_date(date_labels = "%d/%m/%Y") +  # Format X-axis dates
   theme_minimal()
 
-# Create the third ggplot for labels with random colors and custom legend
+legend_labels <- c("Diagnosis" = "Type A", "Prescription" = "Type B", "Review" = "Type C")
+
+# Create the third ggplot for labels with custom colors and legend
 p3 <- ggplot(time_series_data, aes(x = Date, y = factor(Labels, levels = c("Contact Type")), color = Type)) +
-  geom_point(size = 2) +  # Plot label points with random colors
-  scale_color_manual(values = colors, name = "Contact Type") +  # Custom color legend
+  geom_point(size = 2) +  # Plot label points with specified colors
+  scale_color_manual(values = colors, labels = legend_labels, name = "Contact Type") +  # Correctly assign custom color legend labels
   labs(title = " ",
        x = "Date",
        y = " ") +
@@ -57,7 +61,16 @@ p3 <- ggplot(time_series_data, aes(x = Date, y = factor(Labels, levels = c("Cont
 # Convert ggplots to plotly objects
 p1_plotly <- ggplotly(p1)
 p2_plotly <- ggplotly(p2)
-p3_plotly <- ggplotly(p3)
+p3_plotly <- ggplotly(p3) %>%
+  layout(
+    legend = list(
+      orientation = "h",  # Horizontal legend
+      x = 0.5,            # Center horizontally
+      y = -0.5,           # Position below the plot
+      xanchor = "center", # Anchor the legend to its center
+      yanchor = "top"     # Anchor the legend's top to the specified y position
+    )
+  )
 
 # Combine the plots using subplot with different heights
 combined_plot <- subplot(
@@ -72,14 +85,14 @@ combined_plot <- subplot(
 ) %>%
   layout(
     xaxis = list(
-      rangeslider = list(visible = TRUE),  # Enables scrolling
-      rangeselector = list(visible = TRUE)  # Adds range selector
+      rangeslider = list(visible = TRUE),
+      rangeselector = list(),
+      fixedrange = TRUE
     )
   )
 
 # Display the combined interactive plot
 combined_plot
-
 
 # Dummy patient table
 
