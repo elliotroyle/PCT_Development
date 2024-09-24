@@ -16,9 +16,7 @@ packages <- c("here",
               "kableExtra",
               "DT", 
               "readxl",
-              "shiny")
+              "shiny",
+              "fastmap")
 
 lapply(packages, library, character.only=TRUE)
-
-install.packages("fastmap")
-
