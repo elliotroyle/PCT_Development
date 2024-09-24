@@ -8,6 +8,7 @@ library(ggplot2)
 library(dplyr)
 library(plotly)
 library(readxl)
+library(fastmap)
 
 ## Loading GP event data
 
