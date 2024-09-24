@@ -156,14 +156,3 @@ combined_plot <- subplot(
       fixedrange = TRUE
     )
   )
-
-# Creating a table to view all data related to a single patient
-
-output$downloadData <- downloadHandler(
-  filename = function() {
-    paste("patient_data_", Sys.Date(), ".csv", sep = "")
-  },
-  content = function(file) {
-    write.csv(TS_df, file, row.names = FALSE)
-  }
-)
