@@ -1,16 +1,62 @@
 ---
 title: "Primary Care Timeline Tool"
 author: "NHS Transformation Unit"
-date: "`r format(Sys.time(), '%d %B %Y')`"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
     toc: true
     toc_depth: 2
     toc_float: true
     toc_collapsed: true
-    css: ../config/nhs_tu_theme.css
 runtime: shiny
 ---
+
+<style>
+/* Cerulean Theme CSS */
+
+/* Global Styles */
+body {
+    background-color: #fff; /* White background */
+    color: #333; /* Dark text color */
+    font-family: Franklin Gothic;
+    font-size: 11pt;
+    font-weight: 300;
+}
+
+h1, h2, h3, h4 {
+  color: #407EC9;
+}
+
+hr {
+  color: #407EC9;
+  border-color: #407EC9;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #407EC9; /* Cerulean blue background */
+    border-color: #407EC9; /* Cerulean blue border */
+    color: #fff; /* White text color */
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #407EC9; /* Cerulean blue button background */
+    border-color: #407EC9; /* Cerulean blue button border */
+    color: #fff; /* White text color */
+}
+
+/* Links Styles */
+a {
+    color: #407EC9; /* Cerulean blue link color */
+}
+
+/* Add more styles as needed */
+
+.toc.float-toc {
+    margin-bottom: 20px; /* Adjust the margin as needed */
+}
+</style>
 
 ```{css, echo=FALSE}
     body .main-container {
@@ -22,12 +68,18 @@ runtime: shiny
     }
 ```
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
 
-source("../config/r_scripts/packages.R")
-source("../visualisation/r_scripts/DUMMY_Visualisation_2.R")
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(plotly)
+library(kableExtra)
+library(shiny)
 
+source("../config/r_scripts/packages.R")
 ```
 
 ```{r logo, echo = FALSE}
@@ -38,6 +90,15 @@ htmltools::img(src = knitr::image_uri(paste0(here(), "/images/DIA_logo_large.png
                width = "180px",
                heigth = "180px")
 
+# Load data
+timeseries_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx"
+dummy_TS_df <- read_excel(timeseries_path, sheet = 1)
+dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
+
+
+
+# Get unique patient names for the dropdown
+patient_ids <- unique(dummy_TS_df$Patient)
 ```
 
 <style>
@@ -67,7 +128,9 @@ Introductory text to be agreed with client, but will speak to purpose of tool, i
 
 This section will contain a search bar which will allow the user to search for a patient using either ID# or surname.
 
-<strong style="color: blue;">[SEARCH BAR OBJECT ALLOWING USER TO SEARCH FOR PATIENT VIA ID# OR SURNAME]</strong>
+```{r dropdownSelection, echo = FALSE}
+selectInput("patient_id", "Select Patient ID:", choices = patient_ids)
+```
 
 </div>
 
@@ -78,23 +141,131 @@ This section will contain a search bar which will allow the user to search for a
 
 The time series below visualises patient X's GP contact history, displaying the following information:
 
-* Date of contact
-* Any diagnoses made on date of contact
-* Any prescriptions (or changes to existing prescriptions) made on date of contact
-* The results of any relevant biomedical assays completed on date of contact
+* Date of contact.
+* Any diagnoses made on date of contact.
+* Any prescriptions (or changes to existing prescriptions) made on date of contact.
+* The results of any relevant biomedical assays completed on date of contact.
 
-<strong style="color: blue;">[DROPDOWN MENU ALLOWING USER TO FILTER CONDITION/MEDICATION TIMESERIES TO VISUALISE]</strong>
+```{r examplePlot, echo=FALSE}
 
-```{r dummy_timeline, echo=FALSE, fig.width=10, fig.height=10, out.width="100%", fig.align='center'}
-combined_plot
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(shiny)
+
+# Load the dummy data
+timeseries_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx"
+dummy_TS_df <- readxl::read_excel(timeseries_path, sheet = 1)
+dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
+patient_ids <- unique(dummy_TS_df$Patient)
+
+# Function to create time series plots
+create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, vis_colour) {
+  if (!(date_col %in% names(data)) | !(y_col %in% names(data)) | !(test_col %in% names(data)) | !(unit_col %in% names(data))) {
+    stop("One or more specified columns are not found in the data frame.")
+  }
+  
+  first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
+  first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
+  
+  data$tooltip_text <- paste0(
+    "Date: ", format(data[[date_col]], "%d/%m/%Y"), "\n",
+    first_non_na_test, ": ", data[[y_col]], " ", first_non_na_unit
+  )
+  
+  y_label <- paste(first_non_na_test, "\n(", first_non_na_unit, ")", sep = "")
+  
+  plot <- ggplot(data, aes_string(x = date_col, y = y_col)) +
+    geom_line(color = vis_colour) +
+    geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +
+    labs(title = paste(first_non_na_test, "Over Time"),
+         x = "Date",
+         y = y_label) +
+    scale_x_date(date_labels = "%d/%m/%Y") +
+    theme_minimal()
+  
+  return(plot)
+}
+
+# Shiny app UI (Removed duplicated dropdown here)
+ui <- fluidPage(
+  sidebarLayout(
+    sidebarPanel(
+      # No need for selectInput() here as it's now in the sidebar
+    ),
+    mainPanel(
+      plotlyOutput('combined_plot')
+    )
+  )
+)
+
+# Shiny app server
+server <- function(input, output) {
+  
+  # Reactive expression to filter data based on the selected patient
+  TS_df <- reactive({
+    req(input$patient_id)  # Ensure a patient is selected
+    filtered_data <- dummy_TS_df %>%
+      filter(Patient == input$patient_id)
+    
+    print(filtered_data)  # Check if data is filtered correctly
+    filtered_data  # Return filtered data
+  })
+  
+  # Render the combined plot using Plotly
+  output$combined_plot <- renderPlotly({
+    filtered_data <- TS_df()  # Use the reactive filtered data
+    
+    if (nrow(filtered_data) == 0) {
+      return(NULL)  # Return if no data available
+    }
+    
+    plot_1 <- create_time_series_plot(filtered_data, "Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "blue")
+    plot_2 <- create_time_series_plot(filtered_data, "Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "lightblue")
+    plot_3 <- create_time_series_plot(filtered_data, "Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "orange")
+    plot_4 <- create_time_series_plot(filtered_data, "Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "yellow")
+
+    # Combine plots into a subplot
+    plot_list <- list(plot_1, plot_2, plot_3, plot_4)
+    plot_list <- Filter(Negate(is.null), plot_list)  # Remove NULL plots
+
+    combined_plot <- subplot(plot_list, nrows = length(plot_list), shareX = TRUE) %>%
+      layout(xaxis = list(rangeslider = list(visible = FALSE), fixedrange = TRUE))
+
+    combined_plot
+  })
+}
+
+# Run the Shiny app
+shinyApp(ui = ui, server = server)
 ```
 
 ## Contact Summary
 ***
 
-Please use the button below to download the patients entire GP event history as a CSV file.
+Please use the button below to download the patients entire GP event history as an Excel workbook file.
 
 
-```{r downloadButtonUI}
-downloadButton("downloadData", "Download Patient Data as CSV")
+```{r downloadLogic, echo=FALSE}
+
+library(downloadthis)
+
+# Load data
+timeseries_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx"
+dummy_TS_df <- read_excel(timeseries_path, sheet = 1)
+dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
+
+TS_df <- dummy_TS_df %>%
+  filter(Patient == 'Joe Bloggs') #'Jane Doe', 'Joe Bloggs'
+
+# TEMP filter the data for specific patients
+TS_df %>%
+  download_this(
+    output_name = "Patient_Contact_History",
+    output_extension = ".xlsx",
+    button_label = "Download patient data",
+    button_type = "warning",
+    has_icon = TRUE,
+    icon = "fa fa-save"
+  )
 ```
