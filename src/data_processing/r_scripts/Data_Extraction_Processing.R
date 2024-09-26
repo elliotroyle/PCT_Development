@@ -3,13 +3,13 @@
 
 ## Loading raw data
 
-raw_extr_path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/raw_extracts/Raw_Patient_Extract.csv"
-raw_extr_df <- read.csv(raw_extr_path, header = TRUE)
+Raw_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/raw_extracts/Raw_Patient_Extract.csv"
+Raw_Extr_df <- read.csv(Raw_Extr_Path, header = TRUE)
 
 
 ## Manually formatting new columns, including manually splitting appropriate prescription values and units and ensuring consistent test, diagnoses and prescription terms
 
-raw_extr_df_filter <-  raw_extr_df %>%
+Raw_Extr_df_Filter <-  Raw_Extr_df %>%
   filter(term %in% c("Lying diastolic blood pressure (observable entity)",
                      "Lying systolic blood pressure (observable entity)",
                      "Renal profile (observable entity)",
@@ -186,7 +186,7 @@ raw_extr_df_filter <-  raw_extr_df %>%
 
 ## Splitting each individual patient's data into isolated data frames to inspect and manually filter out extraneous terms
 
-Pt_Proc_OD <- raw_extr_df_filter %>%
+Pt_Proc_OD <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Olivia Davies") %>%
   filter(Contact_Event_Term %in% c("Depressive Disorders",
                                    "HbA1c level",
@@ -194,7 +194,7 @@ Pt_Proc_OD <- raw_extr_df_filter %>%
                                    "Bisacodyl",
                                    "Escitalopram"))
 
-Pt_Proc_TW <- raw_extr_df_filter %>%
+Pt_Proc_TW <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Thomas Williams") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "HbA1c level",
@@ -202,13 +202,13 @@ Pt_Proc_TW <- raw_extr_df_filter %>%
                                    "Essential hypertension",
                                    "Atorvastatin"))
 
-Pt_Proc_LO <- raw_extr_df_filter %>%
+Pt_Proc_LO <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Leah O'Sullivan") %>%
   filter(Contact_Event_Term %in% c("HbA1c level",
                                    "Serum LDL chol. level",
                                    "Atorvastatin"))
 
-Pt_Proc_EJ <- raw_extr_df_filter %>%
+Pt_Proc_EJ <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Emily Johnson") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "Essential hypertension",
@@ -217,24 +217,24 @@ Pt_Proc_EJ <- raw_extr_df_filter %>%
                                    "Atorvastatin",
                                    "Citalopram"))
 
-Pt_Proc_DO <- raw_extr_df_filter %>%
+Pt_Proc_DO <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Debelah Oluwaseyi") %>%
   filter(Contact_Event_Term %in% c("Depressive Disorders",
                                    "HbA1c level",
                                    "Serum LDL chol. level"))
 
-Pt_Proc_MA <- raw_extr_df_filter %>%
+Pt_Proc_MA <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Maya Ahmed") %>%
   filter(Contact_Event_Term  == "Citalopram")
 
-Pt_Proc_JM <- raw_extr_df_filter %>%
+Pt_Proc_JM <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Jack Murphy") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "HbA1c level",
                                    "Atorvastatin",
                                    "Citalopram"))
 
-Pt_Proc_ZS <- raw_extr_df_filter %>%
+Pt_Proc_ZS <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Zara Singh") %>%
   filter(Contact_Event_Term %in% c("Essential hypertension",
                                    "HbA1c level",
@@ -242,37 +242,37 @@ Pt_Proc_ZS <- raw_extr_df_filter %>%
                                    "Atorvastatin",
                                    "Citalopram"))
 
-Pt_Proc_GT <- raw_extr_df_filter %>%
+Pt_Proc_GT <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Georgina Taylor") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "Essential hypertension",
                                    "HbA1c level",
                                    "Serum LDL chol. level"))
 
-Pt_Proc_LH <- raw_extr_df_filter %>%
+Pt_Proc_LH <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Leila Hassan") %>%
   filter(Contact_Event_Term %in% c("HbA1c level",
                                    "Serum LDL chol. level",
                                    "Atorvastatin",
                                    "Bisoprolol"))
 
-Pt_Proc_WE <- raw_extr_df_filter %>%
+Pt_Proc_WE <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "William Edwards") %>%
   filter(Contact_Event_Term %in% c("HbA1c level",
                                    "Serum LDL chol. level"))
 
-Pt_Proc_DR <- raw_extr_df_filter %>%
+Pt_Proc_DR <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Danielle Roberts") %>%
   filter(Contact_Event_Term %in% c("HbA1c level",
                                    "Serum LDL chol. level"))
 
-Pt_Proc_RD <- raw_extr_df_filter %>%
+Pt_Proc_RD <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Rhea Desai") %>%
   filter(Contact_Event_Term %in% c("COLD",
                                    "Constipation",
                                    "HbA1c level"))
 
-Pt_Proc_HE <- raw_extr_df_filter %>%
+Pt_Proc_HE <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Harriet Evans") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "Essential hypertension",
@@ -281,13 +281,13 @@ Pt_Proc_HE <- raw_extr_df_filter %>%
                                    "Atorvastatin",
                                    "Candesartan"))
 
-Pt_Proc_AN <- raw_extr_df_filter %>%
+Pt_Proc_AN <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Amara Nwachukwu") %>%
   filter(Contact_Event_Term %in% c("Essential hypertension",
                                    "HbA1c level",
                                    "Serum LDL chol. level"))
 
-Pt_Proc_IC <- raw_extr_df_filter %>%
+Pt_Proc_IC <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Isla Campbell") %>%
   filter(Contact_Event_Term %in% c("Essential hypertension",
                                    "Depressive Disorders",
@@ -296,7 +296,7 @@ Pt_Proc_IC <- raw_extr_df_filter %>%
                                    "Atorvastatin",
                                    "Bisoprolol"))
 
-Pt_Proc_SS <- raw_extr_df_filter %>%
+Pt_Proc_SS <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Saesha Sharma") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "Essential hypertension",
@@ -328,30 +328,49 @@ Pt_Proc_Long <- rbind(Pt_Proc_OD,
 
 ## Transforming combined long format data frame into wider format appropriate for the shiny visualisation tools
 
+initial_events <- Pt_Proc_Long %>%
+  group_by(Patient_Name) %>%
+  summarise(
+    First_Diagnosis = unique(Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"])[1],
+    Second_Diagnosis = unique(Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"])[2],
+    
+    First_Biomedical_Test = unique(Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"])[1],
+    Second_Biomedical_Test = unique(Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"])[2],
+    
+    First_Drug_Name = unique(Contact_Event_Term[Contact_Record_Category == "Medication"])[1],
+    Second_Drug_Name = unique(Contact_Event_Term[Contact_Record_Category == "Medication"])[2]
+  )
+
 Pt_Proc_Wide <- Pt_Proc_Long %>%
+  left_join(initial_events, by = "Patient_Name") %>%
   group_by(Patient_Name, Contact_Event_Date) %>%
   mutate(
-    Diagnosis_1 = Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"][1],
-    Diagnosis_2 = Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"][Contact_Event_Term != Diagnoses_1][1],
+
+    Diagnosis_1 = if_else(Contact_Event_Term == First_Diagnosis, First_Diagnosis, NA_character_),
+    Diagnosis_2 = if_else(Contact_Event_Term == Second_Diagnosis, Second_Diagnosis, NA_character_),
     
-    Biomedical_Test_1 = Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"][1],
-    Biomedical_Value_1 = Value[Contact_Record_Category == "Biomedical Assay"][1],
-    Biomedical_1_Units = Units[Contact_Record_Category == "Biomedical Assay"][1],
+    Biomedical_Test_1 = if_else(Contact_Event_Term == First_Biomedical_Test, First_Biomedical_Test, NA_character_),
+    Biomedical_Value_1 = if_else(Contact_Event_Term == First_Biomedical_Test, as.numeric(Value), NA_real_),
+    Biomedical_1_Units = if_else(Contact_Event_Term == First_Biomedical_Test, Units, NA_character_),
     
-    Biomedical_Test_2 = Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
-    Biomedical_Value_2 = Value[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
-    Biomedical_2_Units = Units[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
+    Biomedical_Test_2 = if_else(Contact_Event_Term == Second_Biomedical_Test, Second_Biomedical_Test, NA_character_),
+    Biomedical_Value_2 = if_else(Contact_Event_Term == Second_Biomedical_Test, as.numeric(Value), NA_real_),
+    Biomedical_2_Units = if_else(Contact_Event_Term == Second_Biomedical_Test, Units, NA_character_),
     
-    Drug_Name_1 = Contact_Event_Term[Contact_Record_Category == "Medication"][1],
-    Drug_1_Value = Value[Contact_Record_Category == "Medication"][1],
-    Drug_1_Units = Units[Contact_Record_Category == "Medication"][1],
+    Drug_Name_1 = if_else(Contact_Event_Term == First_Drug_Name, First_Drug_Name, NA_character_),
+    Drug_1_Value = if_else(Contact_Event_Term == First_Drug_Name, as.numeric(Value), NA_real_),
+    Drug_1_Units = if_else(Contact_Event_Term == First_Drug_Name, Units, NA_character_),
     
-    Drug_Name_2 = Contact_Event_Term[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1],
-    Drug_2_Value = Value[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1],
-    Drug_2_Units = Units[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1]
+    Drug_Name_2 = if_else(Contact_Event_Term == Second_Drug_Name, Second_Drug_Name, NA_character_),
+    Drug_2_Value = if_else(Contact_Event_Term == Second_Drug_Name, as.numeric(Value), NA_real_),
+    Drug_2_Units = if_else(Contact_Event_Term == Second_Drug_Name, Units, NA_character_)
   ) %>%
   ungroup() %>%
-  select(-c(5:9)) %>%
-  distinct()
+  distinct() %>%
+  select(-c(5:9))
 
-Pt_Proc_Wide$Contact_Event_Date <- as.Date(Pt_Proc_Wide$Contact_Event_Date)
+
+# Saving the newly processed data frame for loading into the RMD Shiny App
+
+Proc_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx"
+write.xlsx(Pt_Proc_Wide, Proc_Extr_Path, sheetName = "Processed Data", colNames = TRUE, append = FALSE)

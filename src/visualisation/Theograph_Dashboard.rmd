@@ -78,8 +78,21 @@ library(readxl)
 library(plotly)
 library(kableExtra)
 library(shiny)
+library(fastmap)
+library(lubridate)
 
 source("../config/r_scripts/packages.R")
+source("../data_processing/r_scripts/Data_Extraction_Processing.R")
+
+# Load the data
+Pt_Proc_Wide <- read_excel("C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
+
+Pt_Proc_Wide <- Pt_Proc_Wide %>%
+  mutate(Contact_Event_Date = dmy(Contact_Event_Date, quiet = TRUE)) %>%
+  filter(!is.na(Contact_Event_Date))
+
+# Create a list of unique patient names
+patient_names <- unique(Pt_Proc_Wide$Patient_Name)
 ```
 
 ```{r logo, echo = FALSE}
@@ -89,16 +102,6 @@ htmltools::img(src = knitr::image_uri(paste0(here(), "/images/DIA_logo_large.png
                style = 'position:absolute; top:0; right:5%; padding:10px;',
                width = "180px",
                heigth = "180px")
-
-# Load data
-timeseries_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx"
-dummy_TS_df <- read_excel(timeseries_path, sheet = 1)
-dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
-
-
-
-# Get unique patient names for the dropdown
-patient_ids <- unique(dummy_TS_df$Patient)
 ```
 
 <style>
@@ -129,7 +132,7 @@ Introductory text to be agreed with client, but will speak to purpose of tool, i
 This section will contain a search bar which will allow the user to search for a patient using either ID# or surname.
 
 ```{r dropdownSelection, echo = FALSE}
-selectInput("patient_id", "Select Patient ID:", choices = patient_ids)
+selectInput("patient_names", "Select Patient ID:", choices = patient_names)
 ```
 
 </div>
@@ -153,46 +156,48 @@ library(ggplot2)
 library(plotly)
 library(shiny)
 
-# Load the dummy data
-timeseries_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx"
-dummy_TS_df <- readxl::read_excel(timeseries_path, sheet = 1)
-dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
-patient_ids <- unique(dummy_TS_df$Patient)
-
 # Function to create time series plots
 create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, vis_colour) {
-  if (!(date_col %in% names(data)) | !(y_col %in% names(data)) | !(test_col %in% names(data)) | !(unit_col %in% names(data))) {
-    stop("One or more specified columns are not found in the data frame.")
-  }
-  
-  first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
-  first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
-  
-  data$tooltip_text <- paste0(
-    "Date: ", format(data[[date_col]], "%d/%m/%Y"), "\n",
-    first_non_na_test, ": ", data[[y_col]], " ", first_non_na_unit
-  )
-  
-  y_label <- paste(first_non_na_test, "\n(", first_non_na_unit, ")", sep = "")
-  
-  plot <- ggplot(data, aes_string(x = date_col, y = y_col)) +
-    geom_line(color = vis_colour) +
-    geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +
-    labs(title = paste(first_non_na_test, "Over Time"),
-         x = "Date",
-         y = y_label) +
-    scale_x_date(date_labels = "%d/%m/%Y") +
-    theme_minimal()
-  
-  return(plot)
+  tryCatch({
+    # Check if required columns exist
+    if (!(date_col %in% names(data)) | !(y_col %in% names(data)) | !(test_col %in% names(data)) | !(unit_col %in% names(data))) {
+      stop("One or more specified columns are not found in the data frame.")
+    }
+
+    # Extract the first non-missing test name and unit
+    first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
+    first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
+
+    # Create tooltip text for Plotly
+    data$tooltip_text <- paste0(
+      "Date: ", format(data[[date_col]], "%d/%m/%Y"), "\n",
+      first_non_na_test, ": ", data[[y_col]], " ", first_non_na_unit
+    )
+
+    # Define y-axis label
+    y_label <- paste(first_non_na_test, "\n(", first_non_na_unit, ")", sep = "")
+
+    # Plot creation with ggplot2
+    plot <- ggplot(data, aes_string(x = date_col, y = y_col)) +
+      geom_line(color = vis_colour) +
+      geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +
+      labs(title = paste(first_non_na_test, "Over Time"),
+           x = "Date",
+           y = y_label) +
+      scale_x_date(date_labels = "%d/%m/%Y") +
+      theme_minimal()
+
+    return(plot)
+  }, error = function(e) {
+    showNotification(paste("Error creating plot:", e$message), type = "error")  # Display error in UI
+    NULL  # Return NULL to handle gracefully in subplot creation
+  })
 }
 
-# Shiny app UI (Removed duplicated dropdown here)
+# Shiny app UI
 ui <- fluidPage(
   sidebarLayout(
-    sidebarPanel(
-      # No need for selectInput() here as it's now in the sidebar
-    ),
+    sidebarPanel(selectInput("patient_names", "Select Patient ID:", choices = patient_names)),  # Ensure correct variable name
     mainPanel(
       plotlyOutput('combined_plot')
     )
@@ -202,28 +207,26 @@ ui <- fluidPage(
 # Shiny app server
 server <- function(input, output) {
   
-  # Reactive expression to filter data based on the selected patient
-  TS_df <- reactive({
-    req(input$patient_id)  # Ensure a patient is selected
-    filtered_data <- dummy_TS_df %>%
-      filter(Patient == input$patient_id)
-    
-    print(filtered_data)  # Check if data is filtered correctly
-    filtered_data  # Return filtered data
+  # Reactive expression to filter the data based on the selected patient
+  Pt_Wide_reactive <- reactive({
+    req(input$patient_names)  # Ensure a patient is selected
+    filtered_data <- Pt_Proc_Wide %>%
+      filter(Patient_Name == input$patient_names)  # Use the correct input ID
+    filtered_data
   })
   
-  # Render the combined plot using Plotly
+  # Example of using the filtered data in a plot or table
   output$combined_plot <- renderPlotly({
-    filtered_data <- TS_df()  # Use the reactive filtered data
+    filtered_data <- Pt_Wide_reactive()  # Use the reactive filtered data
     
     if (nrow(filtered_data) == 0) {
       return(NULL)  # Return if no data available
     }
     
-    plot_1 <- create_time_series_plot(filtered_data, "Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "blue")
-    plot_2 <- create_time_series_plot(filtered_data, "Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "lightblue")
-    plot_3 <- create_time_series_plot(filtered_data, "Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "orange")
-    plot_4 <- create_time_series_plot(filtered_data, "Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "yellow")
+    plot_1 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "blue")
+    plot_2 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "lightblue")
+    plot_3 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "orange")
+    plot_4 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "yellow")
 
     # Combine plots into a subplot
     plot_list <- list(plot_1, plot_2, plot_3, plot_4)
@@ -250,16 +253,8 @@ Please use the button below to download the patients entire GP event history as 
 
 library(downloadthis)
 
-# Load data
-timeseries_path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/DUMMY_RStudio_Data.xlsx"
-dummy_TS_df <- read_excel(timeseries_path, sheet = 1)
-dummy_TS_df$Date <- as.Date(dummy_TS_df$Date)
-
-TS_df <- dummy_TS_df %>%
-  filter(Patient == 'Joe Bloggs') #'Jane Doe', 'Joe Bloggs'
-
 # TEMP filter the data for specific patients
-TS_df %>%
+Pt_Proc_Wide %>%
   download_this(
     output_name = "Patient_Contact_History",
     output_extension = ".xlsx",
