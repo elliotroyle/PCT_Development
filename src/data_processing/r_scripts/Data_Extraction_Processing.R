@@ -331,25 +331,27 @@ Pt_Proc_Long <- rbind(Pt_Proc_OD,
 Pt_Proc_Wide <- Pt_Proc_Long %>%
   group_by(Patient_Name, Contact_Event_Date) %>%
   mutate(
-    Diagnoses_1 = Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"][1],
-    Diagnoses_2 = Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"][Contact_Event_Term != Diagnoses_1][1],
+    Diagnosis_1 = Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"][1],
+    Diagnosis_2 = Contact_Event_Term[Contact_Record_Category == "Diagnosis/Review"][Contact_Event_Term != Diagnoses_1][1],
     
-    Biomedical_Assay_1 = Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"][1],
+    Biomedical_Test_1 = Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"][1],
     Biomedical_Value_1 = Value[Contact_Record_Category == "Biomedical Assay"][1],
-    Biomedical_Units_1 = Units[Contact_Record_Category == "Biomedical Assay"][1],
+    Biomedical_1_Units = Units[Contact_Record_Category == "Biomedical Assay"][1],
     
-    Biomedical_Assay_2 = Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
+    Biomedical_Test_2 = Contact_Event_Term[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
     Biomedical_Value_2 = Value[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
-    Biomedical_Units_2 = Units[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
+    Biomedical_2_Units = Units[Contact_Record_Category == "Biomedical Assay"][Contact_Event_Term != Biomedical_Assay_1][1],
     
-    Prescription_1 = Contact_Event_Term[Contact_Record_Category == "Medication"][1],
-    Prescription_Value_1 = Value[Contact_Record_Category == "Medication"][1],
-    Prescription_Units_1 = Units[Contact_Record_Category == "Medication"][1],
+    Drug_Name_1 = Contact_Event_Term[Contact_Record_Category == "Medication"][1],
+    Drug_1_Value = Value[Contact_Record_Category == "Medication"][1],
+    Drug_1_Units = Units[Contact_Record_Category == "Medication"][1],
     
-    Prescription_2 = Contact_Event_Term[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1],
-    Prescription_Value_2 = Value[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1],
-    Prescription_Units_2 = Units[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1]
+    Drug_Name_2 = Contact_Event_Term[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1],
+    Drug_2_Value = Value[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1],
+    Drug_2_Units = Units[Contact_Record_Category == "Medication"][Contact_Event_Term != Prescription_1][1]
   ) %>%
   ungroup() %>%
   select(-c(5:9)) %>%
   distinct()
+
+Pt_Proc_Wide$Contact_Event_Date <- as.Date(Pt_Proc_Wide$Contact_Event_Date)
