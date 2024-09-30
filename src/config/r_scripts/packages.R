@@ -17,6 +17,7 @@ packages <- c("here",
               "DT", 
               "readxl",
               "shiny",
-              "fastmap")
+              "fastmap",
+              "rlang")
 
 lapply(packages, library, character.only=TRUE)
