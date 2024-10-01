@@ -60,16 +60,23 @@ a {
 .toc.float-toc {
     margin-bottom: 20px; /* Adjust the margin as needed */
 }
+
+plot-container {
+    max-width: 900px; /* Control the maximum width of the plot */
+    margin-left: auto; /* Align to the right */
+    margin-right: 0;
+  }
 </style>
 
 ```{css, echo=FALSE}
     body .main-container {
-      max-width: 1900px !important;
-      width: 1900px !important;
+      max-width: 1700px !important;
+      width: 1700px !important;
     }
     body {
-      max-width: 1900px !important;
+      max-width: 1700px !important;
     }
+    
 ```
 
 
@@ -90,10 +97,6 @@ source("../data_processing/r_scripts/Data_Extraction_Processing.R")
 
 # Loading the processed data
 Pt_Proc_Wide <- read_excel("C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
-
-Pt_Proc_Wide <- Pt_Proc_Wide %>%
-  mutate(Contact_Event_Date = dmy(Contact_Event_Date, quiet = TRUE)) %>%
-  filter(!is.na(Contact_Event_Date))
 
 patient_names <- unique(Pt_Proc_Wide$Patient_Name)
 ```
@@ -122,7 +125,7 @@ The time series below visualises patient X's GP contact history, displaying the 
 * Any prescriptions (or changes to existing prescriptions) made on date of contact.
 * The results of any relevant biomedical assays completed on date of contact.
 
-```{r examplePlot, echo=FALSE}
+```{r examplePlot, fig.height=18, echo=FALSE}
 
 library(dplyr)
 library(ggplot2)
@@ -136,7 +139,16 @@ create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, v
       stop("One or more specified columns are not found in the data frame.")
     }
 
+    # Check if the y_col and date_col have valid data
+    if (all(is.na(data[[y_col]])) || nrow(data) == 0) {
+      stop("The y_col has no valid data.")
+    }
+
     data <- data[!is.na(data[[y_col]]), ]
+
+    if (nrow(data) == 0) {
+      stop("Filtered data has no rows after removing NA values.")
+    }
 
     data$tooltip_text <- paste0(
       "Date: ", format(data[[date_col]], "%d/%m/%Y"), "\n",  
@@ -155,106 +167,113 @@ create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, v
       theme_minimal() +
       theme(axis.title.y = element_text(size = 12))
 
-    plotly_plot <- ggplotly(plot, tooltip = c("x", "y", "tooltip_text"))
+    plotly_plot <- ggplotly(plot, tooltip = c("x", "y", "tooltip_text")) %>%
+      layout(margin = list(l = 250))  # Adjust the left margin as needed
 
     return(plotly_plot)
   }, error = function(e) {
     showNotification(paste("Error creating plot:", e$message), type = "error")
-    NULL  
+    return(NULL)  # Ensure a NULL return on error
   })
 }
 
-# Shiny UI
 ui <- fluidPage(
-  tags$style(HTML("
-    /* Cerulean Theme CSS */
+  tags$head(
+    tags$style(HTML("
+      body {
+        width: 100%;
+        height: 100%;
+        background-color: #fff; /* White background */
+        color: #333; /* Dark text color */
+        font-family: Franklin Gothic;
+        font-size: 11pt;
+        font-weight: 300;
+      }
 
-    /* Global Styles */
-    body {
-    background-color: #fff; /* White background */
-    color: #333; /* Dark text color */
-    font-family: Franklin Gothic;
-    font-size: 11pt;
-    font-weight: 300;
-}
+      /* Heading Styles */
+      h1, h2, h3, h4 {
+        color: #407EC9;
+      }
 
-h1, h2, h3, h4 {
-  color: #407EC9;
-}
+      hr {
+        color: #407EC9;
+        border-color: #407EC9;
+      }
 
-hr {
-  color: #407EC9;
-  border-color: #407EC9;
-}
+      /* Navbar Styles */
+      .navbar {
+        background-color: #407EC9; /* Cerulean blue background */
+        border-color: #407EC9; /* Cerulean blue border */
+        color: #fff; /* White text color */
+      }
 
-/* Navbar Styles */
-.navbar {
-    background-color: #407EC9; /* Cerulean blue background */
-    border-color: #407EC9; /* Cerulean blue border */
-    color: #fff; /* White text color */
-}
+      /* Button Styles */
+      .btn-primary {
+        background-color: #407EC9; /* Cerulean blue button background */
+        border-color: #407EC9; /* Cerulean blue button border */
+        color: #fff; /* White text color */
+      }
 
-/* Button Styles */
-.btn-primary {
-    background-color: #407EC9; /* Cerulean blue button background */
-    border-color: #407EC9; /* Cerulean blue button border */
-    color: #fff; /* White text color */
-}
+      /* Custom download button style */
+      .btn-download {
+        background-color: #407EC9; /* Pale blue background */
+        border-color: #407EC9; /* Pale blue border */
+        color: #fff; /* White text color */
+      }
 
-/* Custom button style for pale blue */
-.btn-download {
-    background-color: #407EC9; /* Pale blue background */
-    border-color: #407EC9; /* Pale blue border */
-    color: #fff; /* White text color */
-}
+      /* Link Styles */
+      a {
+        color: #407EC9; /* Cerulean blue link color */
+      }
 
-/* Links Styles */
-a {
-    color: #407EC9; /* Cerulean blue link color */
-}
-
-/* Add more styles as needed */
-
-.toc.float-toc {
-    margin-bottom: 20px; /* Adjust the margin as needed */
-}
-  ")),
+      /* Adjust TOC style */
+      .toc.float-toc {
+        margin-bottom: 20px;
+      }
+      
+      .plot-container {
+    max-width: 1400px; /* Control the maximum width of the plot */
+    margin-left: auto; /* Align the plot to the right */
+    margin-right: 0;
+  }
+    "))
+  ),
   
   titlePanel("Primary Care Timeline Tool"),
   hr(),
+  
   fluidRow(
-    column(
+  column(
       width = 4,
       h3("Patient selection"),
       hr(),
       p("This section allows you to search for a patient using either ID# or surname."),
       selectInput("patient_names", "Select Patient ID:", choices = patient_names)  
     ),
-     column(
+  column(
       width = 4,
       h3("Patient information"),
       hr(),
       uiOutput("patient_report")
-     ),
-    column(
-    width = 4,
-    h3("Contact summary"),
-    hr(),
-    p("Please use the button below to download the patient's entire GP event history as an Excel workbook file."),
-    downloadButton("downloadData", label = "Download patient data", class = "btn-download")  
-)
+    ),
+  column(
+      width = 4,
+      h3("Contact summary"),
+      hr(),
+      p("Please use the button below to download the patient's entire GP event history as an Excel workbook file."),
+      downloadButton("downloadData", label = "Download patient data", class = "btn-download")  
+    )
   ),
   
   fluidRow(
-    column(
-      width = 12,
-      h3("GP Contact, Diagnosis and Prescription Timeline"),
-      hr(),
-      p("The time series below visualises patient X's GP contact history, displaying diagnoses, prescriptions, and assay results."),
-      plotlyOutput("combined_plot")
+    width = 12,
+    h3("GP Contact, Diagnosis and Prescription Timeline"),
+    hr(),
+    p("The time series below visualises patient X's GP contact history, displaying diagnoses, prescriptions, and assay results."),
+    plotlyOutput("combined_plot", height = "700px", width = "100%"),  # Wrapped in div for styling
     )
   )
-)
+
 
 
 # Server logic
@@ -264,74 +283,87 @@ server <- function(input, output) {
   Pt_Wide_reactive <- reactive({
     req(input$patient_names)
     Pt_Proc_Wide %>%
-      filter(Patient_Name == input$patient_names)
-  })
+      filter(Patient_Name == input$patient_names) %>%
+      mutate(Contact_Event_Date = as.Date(Contact_Event_Date, format = "%Y-%m-%d"))  # Ensure correct date format
+})
   
-  ## Generating time series plot based on selected patient
-  output$combined_plot <- renderPlotly({
-    filtered_data <- Pt_Wide_reactive()
-    
-    if (nrow(filtered_data) == 0) {
-      return(NULL)
-    }
-    
-    ## Function to create dynamic Y-axis labels for biomedical tests or drugs
-    create_dynamic_label <- function(test_col, unit_col, drug_col, drug_unit_col, data) {
+output$combined_plot <- renderPlotly({
+  filtered_data <- Pt_Wide_reactive()
+  
+  if (nrow(filtered_data) == 0) {
+    showNotification("No data available for the selected patient.", type = "warning")
+    return(NULL)
+  }
+  
+  ## Function to create dynamic Y-axis labels for biomedical tests or drugs
+  create_dynamic_label <- function(data, test_col = NULL, unit_col = NULL, drug_col = NULL, drug_unit_col = NULL, is_test = TRUE) {
+    if (is_test) {
       first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
       first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
       
+      if (!is.na(first_non_na_test)) {
+        return(paste(first_non_na_test, "<br>", first_non_na_unit))
+      }
+    } else {
       first_non_na_drug <- data[[drug_col]][!is.na(data[[drug_col]])][1]
       first_non_na_drug_unit <- data[[drug_unit_col]][!is.na(data[[drug_unit_col]])][1]
       
-      if (!is.na(first_non_na_test)) {
-        return(paste(first_non_na_test, "<br>", first_non_na_unit))
-      } else if (!is.na(first_non_na_drug)) {
+      if (!is.na(first_non_na_drug)) {
         return(paste(first_non_na_drug, "<br>", first_non_na_drug_unit))
-      } else {
-        return("Unknown Value")
       }
     }
-    
-    ## Generating individual plots
-    plot_1 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "blue")
-    plot_2 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "lightblue")
-    plot_3 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "orange")
-    plot_4 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "yellow")
-    
-    ## Creating dynamic Y-axis labels with line breaks
-    y_label_1 <- create_dynamic_label("Biomedical_Test_1", "Biomedical_1_Units", "Drug_Name_1", "Drug_1_Units", filtered_data)
-    y_label_2 <- create_dynamic_label("Biomedical_Test_2", "Biomedical_2_Units", "Drug_Name_2", "Drug_2_Units", filtered_data)
-    y_label_3 <- create_dynamic_label("Biomedical_Test_1", "Biomedical_1_Units", "Drug_Name_1", "Drug_1_Units", filtered_data)
-    y_label_4 <- create_dynamic_label("Biomedical_Test_2", "Biomedical_2_Units", "Drug_Name_2", "Drug_2_Units", filtered_data)
-    
-    ## Creating a combined subplot without Y-axis titles and use annotations instead
-    combined_plot <- subplot(list(plot_1, plot_2, plot_3, plot_4), 
-                             nrows = 4, 
-                             shareX = TRUE, 
-                             titleX = TRUE) %>%
-                     layout(
-                       xaxis = list(rangeslider = list(visible = FALSE), fixedrange = TRUE),
-                       yaxis = list(showticklabels = TRUE, automargin = TRUE),
-                       yaxis2 = list(showticklabels = TRUE, automargin = TRUE),
-                       yaxis3 = list(showticklabels = TRUE, automargin = TRUE),
-                       yaxis4 = list(showticklabels = TRUE, automargin = TRUE),
-                       
-                       ## Adding annotations to replace Y-axis titles with horizontal text
-                       annotations = list(
-                         list(x = -0.07, y = 0.85, text = y_label_1, showarrow = FALSE, xref = "paper", yref = "paper", 
+    return("Unknown Value")
+  }
+
+  # Creating the plots as before
+  plot_1 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "blue")
+  plot_2 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "lightblue")
+  plot_3 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "orange")
+  plot_4 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "yellow")
+
+  # Collecting valid plots
+  plot_list <- list(plot_1, plot_2, plot_3, plot_4)
+  valid_plots <- Filter(Negate(is.null), plot_list)
+
+  if (length(valid_plots) == 0) {
+    showNotification("No valid plots available for the selected patient.", type = "warning")
+    return(NULL)
+  }
+
+  ## Creating dynamic Y-axis labels with line breaks
+  y_label_1 <- create_dynamic_label(filtered_data, test_col = "Biomedical_Test_1", unit_col = "Biomedical_1_Units", is_test = TRUE)
+  y_label_2 <- create_dynamic_label(filtered_data, drug_col = "Drug_Name_1", drug_unit_col = "Drug_1_Units", is_test = FALSE)
+  y_label_3 <- create_dynamic_label(filtered_data, test_col = "Biomedical_Test_2", unit_col = "Biomedical_2_Units", is_test = TRUE)
+  y_label_4 <- create_dynamic_label(filtered_data, drug_col = "Drug_Name_2", drug_unit_col = "Drug_2_Units", is_test = FALSE)
+
+  # Create combined subplot only if there are valid plots
+  combined_plot <- subplot(valid_plots, 
+                           nrows = length(valid_plots), 
+                           shareX = TRUE, 
+                           titleX = TRUE) %>%
+    layout(
+      xaxis = list(rangeslider = list(visible = FALSE), fixedrange = TRUE),
+      yaxis = list(showticklabels = TRUE, automargin = TRUE),
+      yaxis2 = list(showticklabels = TRUE, automargin = TRUE),
+      yaxis3 = list(showticklabels = TRUE, automargin = TRUE),
+      yaxis4 = list(showticklabels = TRUE, automargin = TRUE),
+      
+      ## Adding annotations to replace Y-axis titles with horizontal text
+      annotations = list(
+                         list(x = -0.10, y = 0.90, text = y_label_1, showarrow = FALSE, xref = "paper", yref = "paper", 
                               xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12)),
-                         list(x = -0.07, y = 0.63, text = y_label_2, showarrow = FALSE, xref = "paper", yref = "paper", 
+                         list(x = -0.10, y = 0.63, text = y_label_2, showarrow = FALSE, xref = "paper", yref = "paper", 
                               xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12)),
-                         list(x = -0.07, y = 0.41, text = y_label_3, showarrow = FALSE, xref = "paper", yref = "paper", 
+                         list(x = -0.10, y = 0.38, text = y_label_3, showarrow = FALSE, xref = "paper", yref = "paper", 
                               xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12)),
-                         list(x = -0.07, y = 0.19, text = y_label_4, showarrow = FALSE, xref = "paper", yref = "paper", 
+                         list(x = -0.10, y = 0.12, text = y_label_4, showarrow = FALSE, xref = "paper", yref = "paper", 
                               xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12))
                        )
                      )
-    
-    combined_plot
-  })
-  
+
+  combined_plot
+})
+
   ## Generating patient report based on selected patient
   output$patient_report <- renderUI({
   filtered_data <- Pt_Wide_reactive()
@@ -429,5 +461,5 @@ server <- function(input, output) {
 }
 
 # Run the app
-shinyApp(ui = ui, server = server)
+shinyApp(ui = ui, server = server, options = list(height = 1150))
 ```

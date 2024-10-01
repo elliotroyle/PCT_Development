@@ -369,8 +369,14 @@ Pt_Proc_Wide <- Pt_Proc_Long %>%
   distinct() %>%
   select(-c(5:9))
 
+Pt_Proc_Wide$Contact_Event_Date <- as.Date(Pt_Proc_Wide$Contact_Event_Date, format = "%d/%m/%Y")
+
+str(Pt_Proc_Wide$Contact_Event_Date)
+class(Pt_Proc_Wide$Contact_Event_Date)
+
 
 # Saving the newly processed data frame for loading into the RMD Shiny App
 
-Proc_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx"
+Proc_Extr_Path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx"
 write.xlsx(Pt_Proc_Wide, Proc_Extr_Path, sheetName = "Processed Data", colNames = TRUE, append = FALSE)
+
