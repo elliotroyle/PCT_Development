@@ -89,7 +89,7 @@ source("../config/r_scripts/packages.R")
 source("../data_processing/r_scripts/Data_Extraction_Processing.R")
 
 # Loading the processed data
-Pt_Proc_Wide <- read_excel("C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
+Pt_Proc_Wide <- read_excel("C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
 
 Pt_Proc_Wide <- Pt_Proc_Wide %>%
   mutate(Contact_Event_Date = dmy(Contact_Event_Date, quiet = TRUE)) %>%
