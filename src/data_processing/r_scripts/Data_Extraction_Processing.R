@@ -3,7 +3,7 @@
 
 ## Loading raw data
 
-Raw_Extr_Path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/raw_extracts/Raw_Patient_Extract.csv"
+Raw_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/raw_extracts/Raw_Patient_Extract.csv"
 Raw_Extr_df <- read.csv(Raw_Extr_Path, header = TRUE)
 
 
@@ -377,6 +377,6 @@ class(Pt_Proc_Wide$Contact_Event_Date)
 
 # Saving the newly processed data frame for loading into the RMD Shiny App
 
-Proc_Extr_Path <- "C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx"
+Proc_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx"
 write.xlsx(Pt_Proc_Wide, Proc_Extr_Path, sheetName = "Processed Data", colNames = TRUE, append = FALSE)
 

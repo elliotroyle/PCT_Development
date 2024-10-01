@@ -96,7 +96,7 @@ source("../config/r_scripts/packages.R")
 source("../data_processing/r_scripts/Data_Extraction_Processing.R")
 
 # Loading the processed data
-Pt_Proc_Wide <- read_excel("C:/Users/elliot.royle/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
+Pt_Proc_Wide <- read_excel("C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
 
 patient_names <- unique(Pt_Proc_Wide$Patient_Name)
 ```
@@ -118,11 +118,10 @@ Introductory text to be agreed with client, but will speak to purpose of tool, i
 ## Categories explored within this tool
 ***
 
-The time series below visualises patient X's GP contact history, displaying the following information:
+Following the selection of one of the (fictional) patient's names, the time series below visualises the patient's GP contact history, displaying the following information:
 
-* Date of contact.
-* Any diagnoses made on date of contact.
-* Any prescriptions (or changes to existing prescriptions) made on date of contact.
+* Date of contact;
+* Any prescriptions (or changes to existing prescriptions) made on date of contact; and
 * The results of any relevant biomedical assays completed on date of contact.
 
 ```{r examplePlot, fig.height=18, echo=FALSE}
@@ -139,36 +138,31 @@ create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, v
       stop("One or more specified columns are not found in the data frame.")
     }
 
-    # Check if the y_col and date_col have valid data
-    if (all(is.na(data[[y_col]])) || nrow(data) == 0) {
-      stop("The y_col has no valid data.")
-    }
-
     data <- data[!is.na(data[[y_col]]), ]
 
-    if (nrow(data) == 0) {
-      stop("Filtered data has no rows after removing NA values.")
-    }
-
+    # Create tooltip text
     data$tooltip_text <- paste0(
-      "Date: ", format(data[[date_col]], "%d/%m/%Y"), "\n",  
+      "Date: ", format(data[[date_col]], "%d/%m/%Y"), "<br>",  # Use <br> for line breaks in HTML
       data[[test_col]], ": ", data[[y_col]], " ", data[[unit_col]]
     )
 
-    y_label <- paste(data[[test_col]][1], "\n(", data[[unit_col]][1], ")", sep = "")
+    # Set the y-axis label
+    y_label <- paste(test_col, "<br>(", data[[unit_col]][1], ")", sep = "")
 
+    # Create the plot
     plot <- ggplot(data, aes(x = !!sym(date_col), y = !!sym(y_col))) +
-      geom_line(color = vis_colour) +
-      geom_point(color = vis_colour, size = 2) +  
-      labs(title = paste(data[[test_col]][1], "Over Time"),
-           x = "Date",
-           y = y_label) +
-      scale_x_date(date_labels = "%d/%m/%Y") +
-      theme_minimal() +
-      theme(axis.title.y = element_text(size = 12))
+  geom_line(color = vis_colour) +
+  geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +  
+  labs(title = NULL,
+       x = "Date",
+       y = y_label) +
+  scale_x_date(date_labels = "%d/%m/%Y", limits = c(as.Date("2020-01-01"), as.Date(Sys.Date()))) +
+  theme_minimal() +
+  theme(axis.title.y = element_text(size = 12))
 
-    plotly_plot <- ggplotly(plot, tooltip = c("x", "y", "tooltip_text")) %>%
-      layout(margin = list(l = 250))  # Adjust the left margin as needed
+# Ensure the tooltip is included correctly in the ggplotly call
+plotly_plot <- ggplotly(plot, tooltip = "text") %>%  # Specify the text aesthetic
+  layout(margin = list(l = 250))  # Adjust the left margin as needed
 
     return(plotly_plot)
   }, error = function(e) {
@@ -296,72 +290,80 @@ output$combined_plot <- renderPlotly({
   }
   
   ## Function to create dynamic Y-axis labels for biomedical tests or drugs
-  create_dynamic_label <- function(data, test_col = NULL, unit_col = NULL, drug_col = NULL, drug_unit_col = NULL, is_test = TRUE) {
-    if (is_test) {
-      first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
-      first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
-      
-      if (!is.na(first_non_na_test)) {
-        return(paste(first_non_na_test, "<br>", first_non_na_unit))
-      }
-    } else {
-      first_non_na_drug <- data[[drug_col]][!is.na(data[[drug_col]])][1]
-      first_non_na_drug_unit <- data[[drug_unit_col]][!is.na(data[[drug_unit_col]])][1]
-      
-      if (!is.na(first_non_na_drug)) {
-        return(paste(first_non_na_drug, "<br>", first_non_na_drug_unit))
-      }
+create_dynamic_label <- function(data, test_col = NULL, unit_col = NULL, drug_col = NULL, drug_unit_col = NULL, is_test = TRUE) {
+  if (is_test) {
+    first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
+    first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
+    
+    if (!is.na(first_non_na_test)) {
+      return(paste(first_non_na_test, "<br>", first_non_na_unit))
     }
-    return("Unknown Value")
+  } else {
+    first_non_na_drug <- data[[drug_col]][!is.na(data[[drug_col]])][1]
+    first_non_na_drug_unit <- data[[drug_unit_col]][!is.na(data[[drug_unit_col]])][1]
+    
+    if (!is.na(first_non_na_drug)) {
+      return(paste(first_non_na_drug, "<br>", first_non_na_drug_unit))
+    }
   }
+  return("Unknown Value")
+}
 
-  # Creating the plots as before
-  plot_1 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "blue")
-  plot_2 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "lightblue")
-  plot_3 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "orange")
-  plot_4 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "yellow")
+# Create the plots
+plot_1 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "#407EC9")
+plot_2 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "#ff9933")
+plot_3 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "#407EC9")
+plot_4 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "#ff9933")
 
-  # Collecting valid plots
-  plot_list <- list(plot_1, plot_2, plot_3, plot_4)
-  valid_plots <- Filter(Negate(is.null), plot_list)
+# Swap plot_2 and plot_3 in the plot_list
+plot_list <- list(plot_1, plot_3, plot_2, plot_4)  # plot_3 is now in the second position, plot_2 in the third
 
-  if (length(valid_plots) == 0) {
-    showNotification("No valid plots available for the selected patient.", type = "warning")
-    return(NULL)
-  }
+# Adjust the label_list accordingly
+label_list <- list(
+  create_dynamic_label(filtered_data, test_col = "Biomedical_Test_1", unit_col = "Biomedical_1_Units", is_test = TRUE),
+  create_dynamic_label(filtered_data, test_col = "Biomedical_Test_2", unit_col = "Biomedical_2_Units", is_test = TRUE),  # swapped with plot_2
+  create_dynamic_label(filtered_data, drug_col = "Drug_Name_1", drug_unit_col = "Drug_1_Units", is_test = FALSE),        # swapped with plot_3
+  create_dynamic_label(filtered_data, drug_col = "Drug_Name_2", drug_unit_col = "Drug_2_Units", is_test = FALSE)
+)
 
-  ## Creating dynamic Y-axis labels with line breaks
-  y_label_1 <- create_dynamic_label(filtered_data, test_col = "Biomedical_Test_1", unit_col = "Biomedical_1_Units", is_test = TRUE)
-  y_label_2 <- create_dynamic_label(filtered_data, drug_col = "Drug_Name_1", drug_unit_col = "Drug_1_Units", is_test = FALSE)
-  y_label_3 <- create_dynamic_label(filtered_data, test_col = "Biomedical_Test_2", unit_col = "Biomedical_2_Units", is_test = TRUE)
-  y_label_4 <- create_dynamic_label(filtered_data, drug_col = "Drug_Name_2", drug_unit_col = "Drug_2_Units", is_test = FALSE)
+# Filter out any null plots
+valid_plots <- Filter(Negate(is.null), plot_list)
+valid_labels <- label_list[!sapply(plot_list, is.null)]
 
-  # Create combined subplot only if there are valid plots
-  combined_plot <- subplot(valid_plots, 
-                           nrows = length(valid_plots), 
-                           shareX = TRUE, 
-                           titleX = TRUE) %>%
-    layout(
-      xaxis = list(rangeslider = list(visible = FALSE), fixedrange = TRUE),
-      yaxis = list(showticklabels = TRUE, automargin = TRUE),
-      yaxis2 = list(showticklabels = TRUE, automargin = TRUE),
-      yaxis3 = list(showticklabels = TRUE, automargin = TRUE),
-      yaxis4 = list(showticklabels = TRUE, automargin = TRUE),
-      
-      ## Adding annotations to replace Y-axis titles with horizontal text
-      annotations = list(
-                         list(x = -0.10, y = 0.90, text = y_label_1, showarrow = FALSE, xref = "paper", yref = "paper", 
-                              xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12)),
-                         list(x = -0.10, y = 0.63, text = y_label_2, showarrow = FALSE, xref = "paper", yref = "paper", 
-                              xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12)),
-                         list(x = -0.10, y = 0.38, text = y_label_3, showarrow = FALSE, xref = "paper", yref = "paper", 
-                              xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12)),
-                         list(x = -0.10, y = 0.12, text = y_label_4, showarrow = FALSE, xref = "paper", yref = "paper", 
-                              xanchor = "center", yanchor = "middle", textangle = 0, font = list(size = 12))
-                       )
-                     )
+# If no valid plots, show a notification and return NULL
+if (length(valid_plots) == 0) {
+  showNotification("No valid plots available for the selected patient.", type = "warning")
+  return(NULL)
+}
 
-  combined_plot
+# Create dynamic Y-axis labels with line breaks
+combined_plot <- subplot(valid_plots, 
+                         nrows = length(valid_plots), 
+                         shareX = TRUE, 
+                         titleX = TRUE) %>%
+  layout(
+    xaxis = list(rangeslider = list(visible = FALSE), fixedrange = TRUE),
+    yaxis = list(showticklabels = TRUE, automargin = TRUE),
+    
+    # Add annotations dynamically for valid labels
+    annotations = lapply(seq_along(valid_labels), function(i) {
+      list(
+        x = -0.10, 
+        y = 1 - (i - 1) * (1 / length(valid_labels)) - 0.11,  # Dynamic Y-positioning and added spacing adjustment
+        text = valid_labels[[i]], 
+        showarrow = FALSE, 
+        xref = "paper", 
+        yref = "paper", 
+        xanchor = "center", 
+        yanchor = "middle", 
+        textangle = 0, 
+        font = list(size = 14)
+      )
+    })
+  )
+
+combined_plot
+
 })
 
   ## Generating patient report based on selected patient
