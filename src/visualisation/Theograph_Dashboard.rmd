@@ -121,6 +121,7 @@ Introductory text to be agreed with client, but will speak to purpose of tool, i
 Following the selection of one of the (fictional) patient's names, the time series below visualises the patient's GP contact history, displaying the following information:
 
 * Date of contact;
+* The initial date of any relevant diagnoses;
 * Any prescriptions (or changes to existing prescriptions) made on date of contact; and
 * The results of any relevant biomedical assays completed on date of contact.
 
@@ -241,8 +242,8 @@ ui <- fluidPage(
       width = 4,
       h3("Patient selection"),
       hr(),
-      p("This section allows you to search for a patient using either ID# or surname."),
-      selectInput("patient_names", "Select Patient ID:", choices = patient_names)  
+      p("This section allows you to search for a patient using given name or surname."),
+      selectInput("patient_names", "Select Patient name:", choices = patient_names)  
     ),
   column(
       width = 4,
@@ -263,7 +264,7 @@ ui <- fluidPage(
     width = 12,
     h3("GP Contact, Diagnosis and Prescription Timeline"),
     hr(),
-    p("The time series below visualises patient X's GP contact history, displaying diagnoses, prescriptions, and assay results."),
+    p("The time series below visualises the patient's GP contact history, displaying diagnoses, prescriptions, and assay results."),
     plotlyOutput("combined_plot", height = "700px", width = "100%"),  # Wrapped in div for styling
     )
   )
