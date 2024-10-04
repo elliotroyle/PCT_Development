@@ -115,9 +115,9 @@ Raw_Extr_df_Filter <-  Raw_Extr_df %>%
     term == "Constipation (disorder)" ~ "Constipation",
     term == "Diabetes mellitus type 2 (disorder)" ~ "Diabetes type 2",
     term == "Chronic obstructive lung disease (disorder)" ~ "COLD",
-    term == "Mixed anxiety and depressive disorder (disorder)" ~ "Depressive Disorders",
-    term == "Depressive disorder NEC (disorder)" ~ "Depressive Disorders",
-    term == "Depressive disorder (disorder)" ~ "Depressive Disorders",
+    term == "Mixed anxiety and depressive disorder (disorder)" ~ "Depressive disorders",
+    term == "Depressive disorder NEC (disorder)" ~ "Depressive disorders",
+    term == "Depressive disorder (disorder)" ~ "Depressive disorders",
     term == "Atorvastatin 10mg tablets" ~ "Atorvastatin",
     term == "Atorvastatin 20mg tablets" ~ "Atorvastatin",
     term == "Atorvastatin 40mg tablets" ~ "Atorvastatin",
@@ -156,16 +156,11 @@ Raw_Extr_df_Filter <-  Raw_Extr_df %>%
     TRUE ~ "NotKnown")) %>%
   filter(Patient_Name %in% c("Olivia Davies",
                              "Thomas Williams",
-                             "Leah O'Sullivan",
                              "Emily Johnson",
                              "Debelah Oluwaseyi",
-                             "Maya Ahmed",
                              "Jack Murphy",
                              "Zara Singh",
                              "Georgina Taylor",
-                             "Leila Hassan",
-                             "William Edwards",
-                             "Danielle Roberts",
                              "Rhea Desai",
                              "Harriet Evans",
                              "Amara Nwachukwu",
@@ -188,7 +183,7 @@ Raw_Extr_df_Filter <-  Raw_Extr_df %>%
 
 Pt_Proc_OD <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Olivia Davies") %>%
-  filter(Contact_Event_Term %in% c("Depressive Disorders",
+  filter(Contact_Event_Term %in% c("Depressive disorders",
                                    "HbA1c level",
                                    "Serum LDL chol. level",
                                    "Bisacodyl",
@@ -202,12 +197,6 @@ Pt_Proc_TW <- Raw_Extr_df_Filter %>%
                                    "Essential hypertension",
                                    "Atorvastatin"))
 
-Pt_Proc_LO <- Raw_Extr_df_Filter %>%
-  filter(Patient_Name == "Leah O'Sullivan") %>%
-  filter(Contact_Event_Term %in% c("HbA1c level",
-                                   "Serum LDL chol. level",
-                                   "Atorvastatin"))
-
 Pt_Proc_EJ <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Emily Johnson") %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
@@ -219,13 +208,9 @@ Pt_Proc_EJ <- Raw_Extr_df_Filter %>%
 
 Pt_Proc_DO <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Debelah Oluwaseyi") %>%
-  filter(Contact_Event_Term %in% c("Depressive Disorders",
+  filter(Contact_Event_Term %in% c("Depressive disorders",
                                    "HbA1c level",
                                    "Serum LDL chol. level"))
-
-Pt_Proc_MA <- Raw_Extr_df_Filter %>%
-  filter(Patient_Name == "Maya Ahmed") %>%
-  filter(Contact_Event_Term  == "Citalopram")
 
 Pt_Proc_JM <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Jack Murphy") %>%
@@ -247,23 +232,6 @@ Pt_Proc_GT <- Raw_Extr_df_Filter %>%
   filter(Contact_Event_Term %in% c("Diabetes type 2",
                                    "Essential hypertension",
                                    "HbA1c level",
-                                   "Serum LDL chol. level"))
-
-Pt_Proc_LH <- Raw_Extr_df_Filter %>%
-  filter(Patient_Name == "Leila Hassan") %>%
-  filter(Contact_Event_Term %in% c("HbA1c level",
-                                   "Serum LDL chol. level",
-                                   "Atorvastatin",
-                                   "Bisoprolol"))
-
-Pt_Proc_WE <- Raw_Extr_df_Filter %>%
-  filter(Patient_Name == "William Edwards") %>%
-  filter(Contact_Event_Term %in% c("HbA1c level",
-                                   "Serum LDL chol. level"))
-
-Pt_Proc_DR <- Raw_Extr_df_Filter %>%
-  filter(Patient_Name == "Danielle Roberts") %>%
-  filter(Contact_Event_Term %in% c("HbA1c level",
                                    "Serum LDL chol. level"))
 
 Pt_Proc_RD <- Raw_Extr_df_Filter %>%
@@ -290,7 +258,7 @@ Pt_Proc_AN <- Raw_Extr_df_Filter %>%
 Pt_Proc_IC <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Isla Campbell") %>%
   filter(Contact_Event_Term %in% c("Essential hypertension",
-                                   "Depressive Disorders",
+                                   "Depressive disorders",
                                    "HbA1c level",
                                    "Serum LDL chol. level",
                                    "Atorvastatin",
@@ -309,16 +277,11 @@ Pt_Proc_SS <- Raw_Extr_df_Filter %>%
 
 Pt_Proc_Long <- rbind(Pt_Proc_OD,
                       Pt_Proc_TW,
-                      Pt_Proc_LO,
                       Pt_Proc_EJ,
                       Pt_Proc_DO,
-                      Pt_Proc_MA,
                       Pt_Proc_JM,
                       Pt_Proc_ZS,
                       Pt_Proc_GT,
-                      Pt_Proc_LH,
-                      Pt_Proc_WE,
-                      Pt_Proc_DR,
                       Pt_Proc_RD,
                       Pt_Proc_HE,
                       Pt_Proc_AN,
@@ -371,9 +334,13 @@ Pt_Proc_Wide <- Pt_Proc_Long %>%
 
 Pt_Proc_Wide$Contact_Event_Date <- as.Date(Pt_Proc_Wide$Contact_Event_Date, format = "%d/%m/%Y")
 
-str(Pt_Proc_Wide$Contact_Event_Date)
-class(Pt_Proc_Wide$Contact_Event_Date)
+Pt_Proc_Wide$Patient_DOB_trimmed <- substr(Pt_Proc_Wide$Patient_DOB, 1, 7)
+Pt_Proc_Wide$Patient_DOB_with_day <- paste0(Pt_Proc_Wide$Patient_DOB, "-01")
+Pt_Proc_Wide$Patient_DOB_as_date <- as.Date(Pt_Proc_Wide$Patient_DOB_with_day, format = "%Y-%m-%d")
+Pt_Proc_Wide$Patient_DOB <- format(Pt_Proc_Wide$Patient_DOB_as_date, "%d-%m-%Y") 
 
+Pt_Proc_Wide <- Pt_Proc_Wide %>%
+  select(-c(25:27))
 
 # Saving the newly processed data frame for loading into the RMD Shiny App
 

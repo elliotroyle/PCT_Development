@@ -20,6 +20,7 @@ body {
     font-weight: 300;
 }
 
+
 h1, h2, h3, h4 {
   color: #407EC9;
 }
@@ -76,7 +77,6 @@ plot-container {
     body {
       max-width: 1700px !important;
     }
-    
 ```
 
 
@@ -99,6 +99,35 @@ source("../data_processing/r_scripts/Data_Extraction_Processing.R")
 Pt_Proc_Wide <- read_excel("C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx")
 
 patient_names <- unique(Pt_Proc_Wide$Patient_Name)
+
+clean_column <- function(column) {
+  unique_values <- unique(column)
+  # Remove actual NA values, 'NA' strings, and any variations (e.g., ' na', 'Na', etc.)
+  unique_values <- unique_values[!is.na(unique_values) & trimws(tolower(unique_values)) != "na"]
+  return(unique_values)
+}
+
+# Step 1: Apply the cleaning function to each column
+unique_diagnoses_1 <- clean_column(Pt_Proc_Wide$Diagnosis_1)
+unique_diagnoses_2 <- clean_column(Pt_Proc_Wide$Diagnosis_2)
+unique_biomedical_tests_1 <- clean_column(Pt_Proc_Wide$Biomedical_Test_1)
+unique_biomedical_tests_2 <- clean_column(Pt_Proc_Wide$Biomedical_Test_2)
+unique_drug_names_1 <- clean_column(Pt_Proc_Wide$Drug_Name_1)
+unique_drug_names_2 <- clean_column(Pt_Proc_Wide$Drug_Name_2)
+
+# Step 2: Combine the cleaned values into a single list or vector
+Visualisation_choices <- c(
+  unique_diagnoses_1, 
+  unique_diagnoses_2, 
+  unique_biomedical_tests_1, 
+  unique_biomedical_tests_2, 
+  unique_drug_names_1, 
+  unique_drug_names_2
+)
+
+# Step 3: Remove duplicates and sort the final list of choices
+Visualisation_choices <- sort(unique(Visualisation_choices))
+
 ```
 
 ```{r logo, echo = FALSE}
@@ -133,7 +162,7 @@ library(plotly)
 library(shiny)
 
 # Function to create time series plots
-create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, vis_colour, episodicity_col) {
+create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, vis_colour) {
   tryCatch({
     if (!(date_col %in% names(data)) | !(y_col %in% names(data)) | !(test_col %in% names(data)) | !(unit_col %in% names(data))) {
       stop("One or more specified columns are not found in the data frame.")
@@ -143,7 +172,7 @@ create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, v
 
     # Create tooltip text
     data$tooltip_text <- paste0(
-      "Date: ", format(data[[date_col]], "%d/%m/%Y"), "<br>",  # Use <br> for line breaks in HTML
+      "Date: ", format(data[[date_col]], "%d/%m/%Y"), "<br>",
       data[[test_col]], ": ", data[[y_col]], " ", data[[unit_col]]
     )
 
@@ -152,23 +181,21 @@ create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, v
 
     # Create the plot
     plot <- ggplot(data, aes(x = !!sym(date_col), y = !!sym(y_col))) +
-  geom_line(color = vis_colour) +
-  geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +  
-  labs(title = NULL,
-       x = "Date",
-       y = y_label) +
-  scale_x_date(date_labels = "%d/%m/%Y", limits = c(as.Date("2020-01-01"), as.Date(Sys.Date()))) +
-  theme_minimal() +
-  theme(axis.title.y = element_text(size = 12))
+      geom_line(color = vis_colour) +
+      geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +  
+      labs(title = NULL, x = "Date", y = y_label) +
+      scale_x_date(date_labels = "%d/%m/%Y", limits = c(as.Date("2020-01-01"), as.Date(Sys.Date()))) +
+      theme_minimal() +
+      theme(axis.title.y = element_text(size = 12))
 
-# Ensure the tooltip is included correctly in the ggplotly call
-plotly_plot <- ggplotly(plot, tooltip = "text") %>%  # Specify the text aesthetic
-  layout(margin = list(l = 250))  # Adjust the left margin as needed
+    # Ensure the tooltip is included correctly in the ggplotly call
+    plotly_plot <- ggplotly(plot, tooltip = "text") %>% 
+      layout(margin = list(l = 250))  # Adjust the left margin as needed
 
     return(plotly_plot)
   }, error = function(e) {
     showNotification(paste("Error creating plot:", e$message), type = "error")
-    return(NULL)  # Ensure a NULL return on error
+    return(NULL)
   })
 }
 
@@ -187,19 +214,22 @@ create_diagnosis_plot <- function(data, date_col, diagnosis_col, vis_colour) {
     )
 
     # Create the plot
-    plot <- ggplot(data, aes(x = !!sym(date_col), y = 1)) +  # Use a constant value for Y-axis
+    plot <- ggplot(data, aes(x = !!sym(date_col), y = 1)) + 
       geom_line(color = vis_colour) +
       geom_point(aes(text = tooltip_text), color = vis_colour, size = 2) +  
-      labs(title = NULL, x = "Date", y = NULL) +  # No Y-axis label
+      labs(title = NULL, x = "Date", y = NULL) +  
       scale_x_date(date_labels = "%d/%m/%Y", limits = c(as.Date("2020-01-01"), as.Date(Sys.Date()))) +
       theme_minimal() +
-      theme(axis.text.y = element_blank(), 
-            axis.ticks.y = element_blank(), 
-            axis.title.y = element_blank())   # Removes minor y-axis gridlines (if any))  # Remove Y-axis scale
+      theme(
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.title.y = element_blank(),
+        panel.grid.y = element_blank()
+      )
 
     # Convert to Plotly
     plotly_plot <- ggplotly(plot, tooltip = "text") %>%
-      layout(margin = list(l = 250))  # Adjust the left margin as needed
+      layout(margin = list(l = 250)) 
 
     return(plotly_plot)
   }, error = function(e) {
@@ -274,21 +304,28 @@ ui <- fluidPage(
   hr(),
   
   fluidRow(
-  column(
-      width = 4,
+    column(
+      width = 3,
       h3("Patient selection"),
       hr(),
       p("This section allows you to search for a patient using given name or surname."),
       selectInput("patient_names", "Select Patient name:", choices = patient_names)  
     ),
-  column(
-      width = 4,
+    column(
+      width = 3,
+      h3("Visualisation selection"),
+      hr(),
+      p("This section allows you to select which visualisations you wish to view for the selected patient."),
+      selectInput("visualisation_selection", "Select Visualisation:", choices = c("All Plots"))  
+    ),
+    column(
+      width = 3,
       h3("Patient information"),
       hr(),
       uiOutput("patient_report")
     ),
-  column(
-      width = 4,
+    column(
+      width = 3,
       h3("Contact summary"),
       hr(),
       p("Please use the button below to download the patient's entire GP event history as an Excel workbook file."),
@@ -301,33 +338,88 @@ ui <- fluidPage(
     h3("GP Contact, Diagnosis and Prescription Timeline"),
     hr(),
     p("The time series below visualises the patient's GP contact history, displaying diagnoses, prescriptions, and assay results."),
-    plotlyOutput("combined_plot", height = "800px", width = "100%"),  # Wrapped in div for styling
+    plotlyOutput("combined_plot", height = "800px", width = "100%"),
     )
   )
 
 
 
-# Server logic
-server <- function(input, output) {
-  
-  ## Reactive expression to filter data by selected patient
+# Define server logic
+server <- function(input, output, session) {
+
+  # Reactive expression to filter data by selected patient
   Pt_Wide_reactive <- reactive({
     req(input$patient_names)
     Pt_Proc_Wide %>%
       filter(Patient_Name == input$patient_names) %>%
-      mutate(Contact_Event_Date = as.Date(Contact_Event_Date, format = "%Y-%m-%d"))  # Ensure correct date format
-})
+      mutate(Contact_Event_Date = as.Date(Contact_Event_Date, format = "%Y-%m-%d")) 
+  })
   
-output$combined_plot <- renderPlotly({
-  filtered_data <- Pt_Wide_reactive()
+  # Update the available Visualisations based on selected patient
+  observeEvent(input$patient_names, {
+    selected_patient_data <- Pt_Wide_reactive()
+    
+    available_Visualisations <- unique(c(
+      selected_patient_data$Diagnosis_1, 
+      selected_patient_data$Diagnosis_2,
+      selected_patient_data$Biomedical_Test_1, 
+      selected_patient_data$Biomedical_Test_2,
+      selected_patient_data$Drug_Name_1, 
+      selected_patient_data$Drug_Name_2
+    ))
+    
+    available_Visualisations <- available_Visualisations[!is.na(available_Visualisations) & 
+                                                       trimws(tolower(available_Visualisations)) != "na"]
   
-  if (nrow(filtered_data) == 0) {
-    showNotification("No data available for the selected patient.", type = "warning")
-    return(NULL)
-  }
+    # Add 'All Plots' as the first choice
+    updateSelectInput(session, "visualisation_selection", choices = c("All Plots", available_Visualisations))
+  })
   
-  ## Function to create dynamic Y-axis labels for biomedical tests or drugs
-create_dynamic_label <- function(data, test_col = NULL, unit_col = NULL, drug_col = NULL, drug_unit_col = NULL, is_test = TRUE) {
+  # Render the patient report
+  output$patient_report <- renderUI({
+    req(input$patient_names)
+    selected_patient_data <- Pt_Wide_reactive()
+    patient_info <- selected_patient_data[1, c("Patient_Name", "Sex", "Diagnoses_1", "Prescription_1")]
+    
+    tags$div(
+      tags$b("Patient Name: "), patient_info$Patient_Name, tags$br(),
+      tags$b("Sex: "), patient_info$Sex, tags$br(),
+      tags$b("Diagnoses: "), patient_info$Diagnoses_1, tags$br(),
+      tags$b("Prescription(s): "), patient_info$Prescription_1, tags$br()
+    )
+  })
+
+  # Render the combined plot based on selected visualisation
+  output$combined_plot <- renderPlotly({
+    filtered_data <- Pt_Wide_reactive()
+    
+    if (nrow(filtered_data) == 0) {
+      showNotification("No data available for the selected patient.", type = "warning")
+      return(NULL)
+    }
+
+    # Filter data based on the selected Visualisation
+    selected_Visualisation <- input$visualisation_selection
+    req(selected_Visualisation)
+    
+    if (selected_Visualisation != "All Plots") {
+      filtered_data <- filtered_data %>%
+        filter(
+          Diagnosis_1 == selected_Visualisation | 
+          Diagnosis_2 == selected_Visualisation | 
+          Biomedical_Test_1 == selected_Visualisation | 
+          Biomedical_Test_2 == selected_Visualisation | 
+          Drug_Name_1 == selected_Visualisation | 
+          Drug_Name_2 == selected_Visualisation
+        )
+    }
+
+    if (nrow(filtered_data) == 0) {
+      showNotification("No data available for the selected Visualisation.", type = "warning")
+      return(NULL)
+    }
+    
+    create_dynamic_label <- function(data, test_col = NULL, unit_col = NULL, drug_col = NULL, drug_unit_col = NULL, is_test = TRUE) {
   if (is_test) {
     first_non_na_test <- data[[test_col]][!is.na(data[[test_col]])][1]
     first_non_na_unit <- data[[unit_col]][!is.na(data[[unit_col]])][1]
@@ -346,70 +438,62 @@ create_dynamic_label <- function(data, test_col = NULL, unit_col = NULL, drug_co
   return("Unknown Value")
 }
 
-# Create the plots
-plot_1 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "#407EC9")
-plot_2 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "#ff9933")
-plot_3 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "#407EC9")
-plot_4 <- create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "#ff9933")
-
-diagnosis_plot_1 <- create_diagnosis_plot(filtered_data, "Contact_Event_Date", "Diagnosis_1", "#fa5c5c")
-diagnosis_plot_2 <- create_diagnosis_plot(filtered_data, "Contact_Event_Date", "Diagnosis_2", "#36a358")
-
-# Swap plot_2 and plot_3 in the plot_list
-plot_list <- list(diagnosis_plot_1, diagnosis_plot_2, plot_1, plot_3, plot_2, plot_4)
-
-# Adjust the label_list accordingly
-label_list <- list(
-  create_dynamic_label(filtered_data, test_col = "Diagnosis_1", unit_col = "", is_test = TRUE),
-  create_dynamic_label(filtered_data, test_col = "Diagnosis_2", unit_col = "", is_test = TRUE),
-  create_dynamic_label(filtered_data, test_col = "Biomedical_Test_1", unit_col = "Biomedical_1_Units", is_test = TRUE),
-  create_dynamic_label(filtered_data, test_col = "Biomedical_Test_2", unit_col = "Biomedical_2_Units", is_test = TRUE),
-  create_dynamic_label(filtered_data, drug_col = "Drug_Name_1", drug_unit_col = "Drug_1_Units", is_test = FALSE),        
-  create_dynamic_label(filtered_data, drug_col = "Drug_Name_2", drug_unit_col = "Drug_2_Units", is_test = FALSE)
-)
-
-# Filter out any null plots
-valid_plots <- Filter(Negate(is.null), plot_list)
-valid_labels <- label_list[!sapply(plot_list, is.null)]
-
-# If no valid plots, show a notification and return NULL
-if (length(valid_plots) == 0) {
-  showNotification("No valid plots available for the selected patient.", type = "warning")
-  return(NULL)
-}
-
-# Create dynamic Y-axis labels with line breaks
-combined_plot <- subplot(valid_plots, 
-                         nrows = length(valid_plots), 
-                         shareX = TRUE, 
-                         titleX = TRUE) %>%
-  layout(
-    xaxis = list(rangeslider = list(visible = FALSE), fixedrange = TRUE),
-    yaxis = list(showticklabels = FALSE, automargin = TRUE),
+    # Create plots
+    plot_list <- list(
+      create_diagnosis_plot(filtered_data, "Contact_Event_Date", "Diagnosis_1", "#fa5c5c"),
+      create_diagnosis_plot(filtered_data, "Contact_Event_Date", "Diagnosis_2", "#36a358"),
+      create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_1", "Biomedical_Test_1", "Biomedical_1_Units", "#407EC9"),
+      create_time_series_plot(filtered_data, "Contact_Event_Date", "Biomedical_Value_2", "Biomedical_Test_2", "Biomedical_2_Units", "#407EC9"),
+      create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_1_Value", "Drug_Name_1", "Drug_1_Units", "#ff9933"),
+      create_time_series_plot(filtered_data, "Contact_Event_Date", "Drug_2_Value", "Drug_Name_2", "Drug_2_Units", "#ff9933")
+    )
     
-    # Add annotations dynamically for valid labels
-    annotations = lapply(seq_along(valid_labels), function(i) {
-      list(
-        x = -0.10, 
-        y = 1 - (i - 1) * (1 / length(valid_labels)) - 0.11,  # Dynamic Y-positioning and added spacing adjustment
-        text = valid_labels[[i]], 
-        showarrow = FALSE, 
-        xref = "paper", 
-        yref = "paper", 
-        xanchor = "center", 
-        yanchor = "middle", 
-        textangle = 0, 
-        font = list(size = 14)
+    label_list <- list(
+      create_dynamic_label(filtered_data, test_col = "Diagnosis_1", unit_col = "", is_test = TRUE),
+      create_dynamic_label(filtered_data, test_col = "Diagnosis_2", unit_col = "", is_test = TRUE),
+      create_dynamic_label(filtered_data, test_col = "Biomedical_Test_1", unit_col = "Biomedical_1_Units", is_test = TRUE),
+      create_dynamic_label(filtered_data, test_col = "Biomedical_Test_2", unit_col = "Biomedical_2_Units", is_test = TRUE),
+      create_dynamic_label(filtered_data, drug_col = "Drug_Name_1", drug_unit_col = "Drug_1_Units", is_test = FALSE),        
+      create_dynamic_label(filtered_data, drug_col = "Drug_Name_2", drug_unit_col = "Drug_2_Units", is_test = FALSE)
+    )
+    
+        # Filter out any null plots
+    valid_plots <- Filter(Negate(is.null), plot_list)
+    valid_labels <- label_list[!sapply(plot_list, is.null)]
+
+    # If no valid plots, show a notification and return NULL
+    if (length(valid_plots) == 0) {
+      showNotification("No valid plots available for the selected Visualisation.", type = "warning")
+      return(NULL)
+    }
+
+    # Create combined plot
+    combined_plot <- plotly::subplot(valid_plots, nrows = length(valid_plots), shareX = TRUE, titleX = TRUE) %>% ###########################
+
+    layout(
+
+        # Add annotations dynamically for valid labels
+        annotations = lapply(seq_along(valid_labels), function(i) {
+          list(
+            x = -0.10, 
+            y = 1 - (i - 1) * (1 / length(valid_labels)) - 0.11,  # Dynamic Y-positioning and added spacing adjustment
+            text = valid_labels[[i]], 
+            showarrow = FALSE, 
+            xref = "paper", 
+            yref = "paper", 
+            xanchor = "center", 
+            yanchor = "middle", 
+            textangle = 0, 
+            font = list(size = 14)
+          )
+        })
       )
-    })
-  )
+    
+    return(combined_plot)
+  })
 
-combined_plot
 
-})
-
-  ## Generating patient report based on selected patient
-  output$patient_report <- renderUI({
+output$patient_report <- renderUI({
   filtered_data <- Pt_Wide_reactive()
   
   if (nrow(filtered_data) == 0) {
@@ -419,11 +503,25 @@ combined_plot
   patient_name <- trimws(filtered_data$Patient_Name[1])
   patient_gender <- trimws(filtered_data$Patient_Gender[1])
   
+  # Convert Patient_DOB to Date format with 'dd-mm-yyyy'
+  if (!is.null(filtered_data$Patient_DOB[1]) && !is.na(filtered_data$Patient_DOB[1])) {
+    patient_dob <- as.Date(filtered_data$Patient_DOB[1], format = "%d-%m-%Y")  # Adjusted format
+  } else {
+    patient_dob <- NA
+  }
+
+  # Calculate age if DOB is available
+  if (!is.na(patient_dob)) {
+    patient_age <- floor(as.numeric(difftime(Sys.Date(), patient_dob, units = "weeks")) / 52.25)  # Approximate age in years
+  } else {
+    patient_age <- "Unknown"
+  }
+  
+  ## Diagnosis logic
   diagnoses <- filtered_data %>%
     select(First_Diagnosis, Second_Diagnosis, Contact_Event_Date) %>%
     filter(!is.na(First_Diagnosis) | !is.na(Second_Diagnosis))
-  
-  ## Diagnosis logic
+
   diagnosis_report <- "No formal diagnoses to date."
   if (nrow(diagnoses) > 0) {
     diagnosis_entries <- character()
@@ -483,27 +581,30 @@ combined_plot
     prescription_report <- paste0(prescription_report, ".")
   }
 
-  ## Creating the final report
+  ## Creating the final report with DOB and Age
   report <- HTML(paste("<strong>Patient Name:</strong>", patient_name, "<br>",
                        "<strong>Sex:</strong>", patient_gender, "<br>",
+                       "<strong>Date of Birth:</strong>", ifelse(!is.na(patient_dob), format(patient_dob, "%d-%m-%Y"), "Unknown"), "<br>",
+                       "<strong>Age:</strong>", patient_age, "years", "<br>",
                        "<strong>Diagnosis:</strong>", diagnosis_report, "<br>",
                        "<strong>Prescription(s):</strong>", prescription_report))
+  
   report <- trimws(report)
   return(report)
 })
-  
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste("Theograph_Patient_Summary_", Sys.Date(), ".xlsx", sep = "")
-    },
-    content = function(file) {
-      filtered_data <- Pt_Wide_reactive()
-      write.xlsx(filtered_data, file)  
-    }
-  )
+
+output$downloadData <- downloadHandler(
+  filename = function() {
+    paste("Theograph_Patient_Summary_", Sys.Date(), ".xlsx", sep = "")
+  },
+  content = function(file) {
+    filtered_data <- Pt_Wide_reactive()
+    write.xlsx(filtered_data, file)  
+  }
+)
   
 }
 
 # Run the app
-shinyApp(ui = ui, server = server, options = list(height = 1250))
+shinyApp(ui = ui, server = server, options = list(height = 1350))
 ```
