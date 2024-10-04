@@ -1,13 +1,11 @@
 
 # Script for processing raw CIPHA DynAirX data into workable format.
 
-## Loading raw data
+# Loading raw data
 
-Raw_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/raw_extracts/Raw_Patient_Extract.csv"
-Raw_Extr_df <- read.csv(Raw_Extr_Path, header = TRUE)
+Raw_Extr_df <- read.csv(here("data", "raw_extracts", "Raw_Patient_Extract.csv"), header = TRUE)
 
-
-## Manually formatting new columns, including manually splitting appropriate prescription values and units and ensuring consistent test, diagnoses and prescription terms
+# Manually formatting new columns, including manually splitting appropriate prescription values and units and ensuring consistent test, diagnoses and prescription terms
 
 Raw_Extr_df_Filter <-  Raw_Extr_df %>%
   filter(term %in% c("Lying diastolic blood pressure (observable entity)",
@@ -178,8 +176,7 @@ Raw_Extr_df_Filter <-  Raw_Extr_df %>%
          Contact_Event_Category = eventtype) %>%
   select(13, 14, 3, 5, 11, 12, 9, 10, 8)
 
-
-## Splitting each individual patient's data into isolated data frames to inspect and manually filter out extraneous terms
+# Splitting each individual patient's data into isolated data frames to inspect and manually filter out extraneous terms
 
 Pt_Proc_OD <- Raw_Extr_df_Filter %>%
   filter(Patient_Name == "Olivia Davies") %>%
@@ -272,8 +269,7 @@ Pt_Proc_SS <- Raw_Extr_df_Filter %>%
                                    "Serum LDL chol. level",
                                    "Atorvastatin"))
 
-
-## Binding all individual patient data frames together
+# Binding all individual patient data frames together
 
 Pt_Proc_Long <- rbind(Pt_Proc_OD,
                       Pt_Proc_TW,
@@ -288,8 +284,7 @@ Pt_Proc_Long <- rbind(Pt_Proc_OD,
                       Pt_Proc_IC,
                       Pt_Proc_SS)
 
-
-## Transforming combined long format data frame into wider format appropriate for the shiny visualisation tools
+# Transforming combined long format data frame into wider format appropriate for the shiny visualisation tools
 
 initial_events <- Pt_Proc_Long %>%
   group_by(Patient_Name) %>%
@@ -344,6 +339,8 @@ Pt_Proc_Wide <- Pt_Proc_Wide %>%
 
 # Saving the newly processed data frame for loading into the RMD Shiny App
 
-Proc_Extr_Path <- "C:/Users/ejroy/OneDrive - Midlands and Lancashire CSU/Git/Primary-Care-Theograph/data/processed_extracts/Proc_Patient_Extract.xlsx"
-write.xlsx(Pt_Proc_Wide, Proc_Extr_Path, sheetName = "Processed Data", colNames = TRUE, append = FALSE)
-
+write.xlsx(Pt_Proc_Wide, 
+           here("data", "processed_extracts", "Proc_Patient_Extract.xlsx"), 
+           sheetName = "Processed Data", 
+           colNames = TRUE, 
+           append = FALSE)
