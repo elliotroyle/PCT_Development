@@ -13,7 +13,6 @@ The repository contains all code used by the NHS Transformation Unit analytics t
 
 <br/>
 
-
 ## Using the Repository
 
 This codebase contains:
@@ -24,8 +23,9 @@ This codebase contains:
 
 To recreate the data pipeline created for this dashboard, users will need to ensure their working directory is structured as outlined in the [Repository Structure](##-Repository-Structure) section of this ReadMe. This can be undertaken by cloning the repository using Git or by simply downloading a zipped version of the tool from this repository.
 
-<br/>
+For a more detailed guidance on how to recreate the Theograph Proof of Concept Dashboard using this repository, please see the `Theograph_creation_guidance.md` file located within the documentation subfolder.
 
+<br/>
 
 ## Repository Structure
 
@@ -50,7 +50,6 @@ The current structure of the repository is detailed below:
 
 ```
 
-
 <br/>
 
 ### `data`
@@ -64,7 +63,6 @@ This folder contains all images used in the outputs or repository such as the Da
 
 ### `src`
 All code is stored within the `src` folder. This is then divided into `config` (R scripts), `data_extraction` (SQL scripts), `data_processing` (R scripts) and `visualisation` (RMD scripts).
-
 
 <br/>
 
