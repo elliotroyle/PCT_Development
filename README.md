@@ -56,7 +56,7 @@ The current structure of the repository is detailed below:
 This folder contains subfolders relating to both the raw and processed extracts. Due to GDRP, the (fictional) patient data files will not be uploaded to GitHub but placeholders are included in the repository to maintain subfolder structure.
 
 ### `documentation`
-This folder contain the project documentation file, `Theograph_creation_guidance.md`.
+This folder contains the project documentation file, `Theograph_creation_guidance.md`.
 
 ### `images`
 This folder contains all images used in the outputs or repository such as the Data Into Action logo.
