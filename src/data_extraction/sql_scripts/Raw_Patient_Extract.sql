@@ -29,7 +29,7 @@ EventRecords AS (
         pat.Sex,
         pat.Dob,
         'event' AS eventtype,
-        gpe.EventDate AS date,
+        CONVERT(DATE, gpe.EventDate) AS date, -- Convert to 'yyyy-mm-dd' format
         gpe.SuppliedCode AS code,
         sct.term AS term,
         gpe.Episodicity,
@@ -56,7 +56,7 @@ MedicationRecords AS (
         pat.Sex,
         pat.Dob,
         'medication' AS eventtype,
-        gpm.MedicationDate AS date,
+        CONVERT(DATE, gpm.MedicationDate) AS date, -- Convert to 'yyyy-mm-dd' format
         gpm.SuppliedCode AS code,
         gpm.MedicationDescription AS term,
         gpm.Dosage AS episodicity,
