@@ -208,8 +208,7 @@ create_diagnosis_plot <- function(data, date_col, diagnosis_col, vis_colour) {
       theme(
         axis.text.y = element_blank(), 
         axis.ticks.y = element_blank(), 
-        axis.title.y = element_blank(),
-        panel.grid.y = element_blank()
+        axis.title.y = element_blank()
       )
 
     plotly_plot <- ggplotly(plot, tooltip = "text") %>%
