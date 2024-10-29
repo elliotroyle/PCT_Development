@@ -179,7 +179,6 @@ create_time_series_plot <- function(data, date_col, y_col, test_col, unit_col, v
 
     return(plotly_plot)
   }, error = function(e) {
-    showNotification(paste("Error creating plot:", e$message), type = "error")
     return(NULL)
   })
 }
@@ -216,7 +215,6 @@ create_diagnosis_plot <- function(data, date_col, diagnosis_col, vis_colour) {
 
     return(plotly_plot)
   }, error = function(e) {
-    showNotification(paste("Error creating diagnosis plot:", e$message), type = "error")
     return(NULL)
   })
 }
