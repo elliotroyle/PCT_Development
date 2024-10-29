@@ -329,13 +329,12 @@ Pt_Proc_Wide <- Pt_Proc_Long %>%
 
 Pt_Proc_Wide$Contact_Event_Date <- as.Date(Pt_Proc_Wide$Contact_Event_Date, format = "%d/%m/%Y")
 
-Pt_Proc_Wide$Patient_DOB_trimmed <- substr(Pt_Proc_Wide$Patient_DOB, 1, 7)
-Pt_Proc_Wide$Patient_DOB_with_day <- paste0(Pt_Proc_Wide$Patient_DOB, "-01")
-Pt_Proc_Wide$Patient_DOB_as_date <- as.Date(Pt_Proc_Wide$Patient_DOB_with_day, format = "%Y-%m-%d")
-Pt_Proc_Wide$Patient_DOB <- format(Pt_Proc_Wide$Patient_DOB_as_date, "%d-%m-%Y") 
+# Now, reformat it explicitly to the required format as a character string
+Pt_Proc_Wide$Contact_Event_Date <- format(Pt_Proc_Wide$Contact_Event_Date, "%Y-%m-%d")
 
-Pt_Proc_Wide <- Pt_Proc_Wide %>%
-  select(-c(25:27))
+# Check if the transformation was successful
+str(Pt_Proc_Wide)
+head(Pt_Proc_Wide$Contact_Event_Date)
 
 # Saving the newly processed data frame for loading into the RMD Shiny App
 
