@@ -55,3 +55,6 @@ rsconnect/
 # Excel and CSV files
 *.xlsx
 *.csv
+
+# Desktop Services Store
+*.DS_Store
